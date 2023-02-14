@@ -55,10 +55,11 @@ void ThreadsafeQueue::push(threadObject* inpElement){
 	notEmptyCond.notify_one();
 }
 
-bool ThreadsafeQueue::isEmpty(){
+bool ThreadsafeQueue::isEmpty(){ /*This is what the function does*/
     return baseQueue.empty();
 }
 
+//This is commented
 void ThreadsafeQueue::setFullStop(bool inp){
     fullStop = inp;
 }

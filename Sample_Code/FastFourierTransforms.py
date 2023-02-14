@@ -5,7 +5,7 @@ def FastFourierTransform(Coeffs):
     if(not(mt.log(len(Coeffs), 2).is_integer())): #make sure length of input is a power of 2
         raise Exception("Please make your array length a power of 2")
     return FastFourierTransformHelper(Coeffs) #now we can let it actually compute
-
+#this is a comment
 def FastFourierTransformHelper(Coeffs):
     n = len(Coeffs)
     if(n == 1):
@@ -41,6 +41,7 @@ def InverseFastFourierTransformHelper(Coeffs):
         result[i] = evenFunc[i] + rootOfUnity**i * oddFunc[i]  #two calculations for price of one baby
         result[i + int(n/2)] = evenFunc[i] - rootOfUnity**i * oddFunc[i]  #two calculations for price of one baby
     return result
+    
 
 if __name__ == "__main__":
     #time to test it out!
