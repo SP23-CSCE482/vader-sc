@@ -27,3 +27,5 @@ typing_extensions==4.4.0
 urllib3==1.26.14
 xlrd==1.2.0
 XlsxWriter==1.2.1
+typer==0.7.0
+rich==13.3.1
