@@ -1,7 +1,11 @@
 #include "Camera.h"
 
 
+// The camera object that is used to interact with the camera.
+
 Camera::~Camera(){}
+
+// Camera - Initialize camera with specified resolution.
 
 Camera::Camera(int resolutionWidth, int resolutionHeight){
 	renderedImage = new float[resolutionWidth * resolutionHeight * 3];
@@ -9,6 +13,8 @@ Camera::Camera(int resolutionWidth, int resolutionHeight){
 	this->resolutionWidth = resolutionWidth;
 	this->resolutionHeight = resolutionHeight;
 }
+
+// Take a picture on the camera.
 
 void Camera::TakePicture(Scene *scene){
 	glm::vec3 G = eye - lookat;

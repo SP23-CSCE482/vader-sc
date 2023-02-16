@@ -2,11 +2,15 @@ import sympy as sp
 import numpy as np
 import math as mt
 
+
+# Fast Fourier Transform.
 def FastFourierTransform(Coeffs):
     if(not(mt.log(len(Coeffs), 2).is_integer())): #make sure length of input is a power of 2
         raise Exception("Please make your array length a power of 2")
     return FastFourierTransformHelper(Coeffs) #now we can let it actually compute
 
+
+# This function will return the n - th root of unity coefficients in the order that they were found.
 def FastFourierTransformHelper(Coeffs):
     n = len(Coeffs)
     if(n == 1):
@@ -22,6 +26,8 @@ def FastFourierTransformHelper(Coeffs):
         result[i + int(n/2)] = evenFunc[i] - rootOfUnity**i * oddFunc[i]  #two calculations for price of one baby
     return result
 
+
+# This function is a helper function that takes a list of coefficients and returns the inverse of the nth root of unity.
 def InverseFastFourierTransform(Coeffs):
     if(not(mt.log(len(Coeffs), 2).is_integer())): #make sure length of input is a power of 2
         raise Exception("Please make your array length a power of 2")

@@ -6,6 +6,8 @@
 
 class ThreadsafeQueue{
 public:
+
+// This method is thread - safe. It is called from the thread - local code.
 	ThreadsafeQueue(size_t capacity = 500){
 		maxCapacity = capacity; 
 		finnishFlag = new threadObject; 
@@ -26,6 +28,8 @@ private:
 	std::condition_variable notFullCond;
 };
 
+
+// ThreadsafeQueue :: pop - Pop element from queue.
 threadObject* ThreadsafeQueue::pop(){
 	std::unique_lock<std::mutex> localLock(globalMutex);
 	notEmptyCond.wait(localLock, [this] { 
@@ -46,6 +50,8 @@ threadObject* ThreadsafeQueue::pop(){
 }
 
 void ThreadsafeQueue::push(threadObject* inpElement){
+
+// This method is called from Thread. push.
 	std::unique_lock<std::mutex> localLock(globalMutex);
 	notFullCond.wait(localLock, [this] { 
 		return maxCapacity > baseQueue.size(); 
@@ -56,11 +62,15 @@ void ThreadsafeQueue::push(threadObject* inpElement){
 	notEmptyCond.notify_one();
 }
 
+
+// IsEmpty - Check if queue is empty.
 bool ThreadsafeQueue::isEmpty(){
     return baseQueue.empty();
 
 }
 
+
+// Sets whether or not the queue is full stop.
 void ThreadsafeQueue::setFullStop(bool inp){
     fullStop = inp;
 }
