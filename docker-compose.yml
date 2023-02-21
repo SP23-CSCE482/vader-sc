@@ -1,0 +1,3 @@
+services:
+    debian-capstone:
+        image: debian-capstone
