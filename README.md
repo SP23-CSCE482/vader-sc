@@ -1,10 +1,17 @@
 # Vader-SC
-This is the repository for VADER-SC - A project to increase source code readability. 
+
+This is the repository for VADER-SC - A project to increase source code readability.
 
 ## Usage
-To parse directory run ```vader.py /path/to/directory```
 
-## Local Setup 
-* If you don't have ctags installed (which is a system requirement to run the philips parser), run ```sudo apt-get install exuberant-ctags```
-* create a virtual environment, and install the requirements. 
-  * Run ```python3.8 -m venv SC_Venv && source SC_Venv/bin/activate && pip install -r requirements.txt -vvv```     
+To parse directory run `SC_Venv/bin/python3.10 vader.py /path/to/directory`
+
+## Local Setup
+
+Install Docker
+
+-Build the Docker image
+-Run `docker build -t vader-sc -f Dockerfile .`
+
+-Once the image is built, run the image
+-Run `docker run -it vader-sc /bin/bash`
