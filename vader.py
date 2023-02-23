@@ -26,6 +26,12 @@ def parse_df_to_dict(code_dataframe: pd.DataFrame):
     return parsed_data
 
 
+COMMENT_MAP = {
+    ".PY": "#",
+    ".CPP": "//",
+    ".JAVA": "//"
+}
+
 
 def main(directory: Path = typer.Argument(...,help="Directory of Source code to Parse")):
     if not directory.is_dir():
@@ -33,7 +39,7 @@ def main(directory: Path = typer.Argument(...,help="Directory of Source code to 
         raise typer.Exit()
     
     # Code Extracting
-    code_info_df = core_extractor.extractor(directory)
+    code_info_df = None
 
     # Transform Data
     parsed_dict = {}
@@ -45,7 +51,6 @@ def main(directory: Path = typer.Argument(...,help="Directory of Source code to 
         progress_parsing.add_task(description="Parsing Functions", total=None)
         code_info_df = core_extractor.extractor(directory)
         parsed_dict = parse_df_to_dict(code_info_df)
-
 
     pprint(f"Found [bold green]{code_info_df.shape[0]}[/bold green] functions in [bold green]{len(parsed_dict.keys())}[/bold green] files")
 
@@ -76,8 +81,9 @@ def main(directory: Path = typer.Argument(...,help="Directory of Source code to 
         with open(key, "r") as og_file:
             with open(mod_file_name, "w") as mod_file:
                 while(array_counter != len(parsed_dict[key])):
+                    file_ending = Path(key).suffix.upper()
                     if(parsed_dict[key][array_counter]["line_no"] == line_counter):
-                        mod_file.write(f"// Generated: {parsed_dict[key][array_counter]['generated_comment']}\n")
+                        mod_file.write(f"{COMMENT_MAP[file_ending]} Generated: {parsed_dict[key][array_counter]['generated_comment']}\n")
                         array_counter +=1
                     else:
                         mod_file.write(og_file.readline())
