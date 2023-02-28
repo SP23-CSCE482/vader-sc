@@ -70,7 +70,7 @@ def run_ctags_cmd(file_ext, file_names, find):
     return proc
 
 
-def get_function_names(file_names):
+def get_function_names(file_names, ignoreDocumented):
     """ Function to get method/function names from the input files in the given repository
         @parameters
         file_names: Path to the file
@@ -81,10 +81,10 @@ def get_function_names(file_names):
         else ["member", "function", "class"] if file_ext.upper() == "PY" else "method"  # pragma: no mutate
     proc = run_ctags_cmd(file_ext, file_names, find)
     process = str(proc.stdout.read(), 'utf-8')  # pragma: no mutate
-    return process_function_names(process, find)
+    return process_function_names(process, find, file_names, ignoreDocumented)
 
 
-def process_function_names(func_data, find):
+def process_function_names(func_data, find, file_name, ignoreDocumented):
     """ This function cleans the ctags output to get function/method names and line numbers
         @parameters
         func_data: Ctags output
@@ -101,10 +101,50 @@ def process_function_names(func_data, find):
         function_list = get_sorted_func_list(process_list, val)
         line_numbers = get_func_line_num_list(process_list, val)
         line_numbers.sort()
+
+        final_func_list = []
+        final_num_list = []
+        if(ignoreDocumented):
+            commented_functions_boolean_list = list_commented_function(line_numbers, file_name)
+            for i in range(len(commented_functions_boolean_list)):
+                if(not commented_functions_boolean_list[i]):
+                    final_func_list.append(function_list[i])
+                    final_num_list.append(line_numbers[i])
+        else:
+            final_func_list = function_list
+            final_num_list = line_numbers
     else:
         print("Input files doesn't have valid methods")  # pragma: no mutate
         sys.exit(1)  # pragma: no mutate
-    return function_list, line_numbers
+    return final_func_list, final_num_list
+
+
+# Given a list of line numbers, check if each function has been commented.
+# Returns a list of booleans, True = commented, False = not commented 
+def list_commented_function(line_num_list, file_name):
+    file_ext = file_name.split('.')[-1].upper()
+
+    commentSymbols = ['#']
+    if(file_ext == "CPP" or file_ext =="C"):
+        commentSymbols = ['//', '/*', '*/']
+
+    is_commented_list = [False for i in range (len(line_num_list))]
+    index = 0
+    with open(file_name, 'r') as fp:
+        for i, line in enumerate(fp):
+            if (i + 2) == line_num_list[index] :
+                if any(symbol in line for symbol in commentSymbols):
+                    is_commented_list[index] = True;
+            elif (i + 1) == line_num_list[index]:
+                if any(symbol in line for symbol in commentSymbols):
+                    is_commented_list[index] = True;
+                index +=1
+                if(index >= len(line_num_list)):
+                    break;
+                if(line_num_list[index] <= i):
+                    index +=1
+
+    return is_commented_list
 
 
 def process_ctags_output(find, process_list):
@@ -153,7 +193,7 @@ def get_func_line_num_list(process_list, val):
     return line_numbers
 
 
-def check_annot(filename, line_num, annot):
+def check_annot(filename, line_num, annot, removeCppSignatures):
     """ Function checks for the annotation condition
         @parameters
         filename: Path to the file
@@ -163,7 +203,7 @@ def check_annot(filename, line_num, annot):
         This function returns function/method definitions that has the given annotation"""
     ret_val = None
     if annot is None:
-        ret_val = get_func_body(filename, line_num)
+        ret_val = get_func_body(filename, line_num, removeCppSignatures)
     else:
         ret_val = get_annot_methods(filename, line_num, annot)
     return ret_val
@@ -275,7 +315,7 @@ def get_py_annot_method_names(line_data, annot, val):
     return data
 
 
-def get_func_body(filename, line_num):
+def get_func_body(filename, line_num, removeCppSignatures):
     """ Function to get method/function body from files
         @parameters
         filename, line_num: Path to the file, function/method line number
@@ -301,6 +341,14 @@ def get_func_body(filename, line_num):
                 if cnt_braket == 0 and found_start is True:
                     return_val = code
                     break
+    if filename.split('.')[-1].upper() == "CPP" and removeCppSignatures:
+        nameEndIndex = return_val.find('(')
+        functionSignatureSubstring = return_val[0:nameEndIndex]
+        reversedFunctionSignatureSubstring = functionSignatureSubstring[::-1]
+        index = re.search(r'\W+', reversedFunctionSignatureSubstring).start()
+        func_name = reversedFunctionSignatureSubstring[0:index][::-1]
+        return_val = func_name + return_val[nameEndIndex:]
+
     return return_val
 
 
@@ -517,7 +565,7 @@ def process_py_files(code_list, line_nums, line_num, func_name, annot, functions
     return code_list, line_nums
 
 
-def process_input_files(line_num, line_nums, functions, annot, func_name, code_list, functionstartwith):
+def process_input_files(line_num, line_nums, functions, annot, func_name, code_list, functionstartwith, removeCppSignatures):
     """ This function processes that input files to extract methods from the given repo
         @parameters
         code_list: list to store the extracted methods
@@ -536,10 +584,11 @@ def process_input_files(line_num, line_nums, functions, annot, func_name, code_l
         functions = filter_func
         line_num = filer_line_no
     for lin_no, func in zip(line_num, functions):
-        if check_annot(func_name, lin_no, annot) is not None:
-            code_list.append(check_annot(func_name, lin_no, annot))
+        if check_annot(func_name, lin_no, annot, removeCppSignatures) is not None:
+            code_list.append(check_annot(func_name, lin_no, annot, removeCppSignatures))
             UID_LIST.append(func_name + "_" + func)
             line_nums.append(lin_no)
+            
     return code_list, line_nums
 
 
@@ -657,7 +706,8 @@ def initialize_values(delta, annot, path_loc, report_folder):
     return report_folder, annot
 
 
-def extractor(path_loc, annot=None, delta=None, functionstartwith=None, report_folder=None, exclude=None):
+def extractor(path_loc, annot=None, delta=None, functionstartwith=None, report_folder=None, exclude=None, ignoreDocumented=None,
+              removeCppSignatures = None):
     """ Function that initiates the overall process of extracting function/method definitions from the files
         @parameters
         path_loc: directory path of the repository
@@ -682,11 +732,11 @@ def extractor(path_loc, annot=None, delta=None, functionstartwith=None, report_f
         if delta is not None:
             get_delta_lines(func_name, annot, delta)
         else:
-            functions, line_num = get_function_names(func_name)
+            functions, line_num = get_function_names(func_name, ignoreDocumented)
             if os.path.splitext(func_name)[1].upper() == ".PY":
                 code_list, line_nums = process_py_files(code_list,line_nums, line_num, func_name, annot, functionstartwith)
             else:
-                code_list, line_nums = process_input_files(line_num, line_nums, functions, annot, func_name, code_list, functionstartwith)
+                code_list, line_nums = process_input_files(line_num, line_nums, functions, annot, func_name, code_list, functionstartwith, removeCppSignatures)
     end = time.time()
     LOG.info("Extraction process took %s minutes", round((end - start) / 60, 3))  # pragma: no mutate
     LOG.info("%s vaild files has been analysed",  # pragma: no mutate
