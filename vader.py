@@ -17,16 +17,16 @@ def parse_df_to_dict(code_dataframe: pd.DataFrame):
         the code and line numbers
     """
     parsed_data = {}
-    for file_id, code, line in zip(code_dataframe["Uniq ID"], code_dataframe["Code"], code_dataframe["Line"]):
-        og_file_name = file_id[:file_id.find("_", file_id.rfind("."))]
-        if og_file_name in parsed_data:
+    for file_id, code, line in zip(code_dataframe["Uniq ID"], code_dataframe["Code"], code_dataframe["Line"]): #iterate through the dataframe
+        og_file_name = file_id[:file_id.find("_", file_id.rfind("."))] #get the file name
+        if og_file_name in parsed_data: #if the file name is already in the dictionary, append the code and line number
             parsed_data[og_file_name].append({"code":code, "line_no":line})
         else:
             parsed_data[og_file_name] = [{"code":code, "line_no":line}]
     return parsed_data
 
 #languages
-COMMENT_MAP = {
+COMMENT_MAP = { #map of file extensions to comment types
     ".PY": "#",
     ".CPP": "//",
     ".JAVA": "//"
@@ -37,7 +37,7 @@ def main(directory: Path = typer.Argument(...,help="Directory of Source code to 
     if not directory.is_dir():
         pprint("[bold red]Must be a directory[/bold red]")
         raise typer.Exit()
-    
+
     # Code Extracting
     code_info_df = None
 
@@ -47,7 +47,7 @@ def main(directory: Path = typer.Argument(...,help="Directory of Source code to 
     pprint(f"Generating comments for [bold green]{directory}[/bold green]")
 
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"))  as progress_parsing:
-        progress_parsing.add_task(description="Extracting Functions", total=None)
+        progress_parsing.add_task(description="Extracting Functions", total=None) #
         progress_parsing.add_task(description="Parsing Functions", total=None)
         code_info_df = core_extractor.extractor(directory)
         parsed_dict = parse_df_to_dict(code_info_df)
@@ -61,35 +61,35 @@ def main(directory: Path = typer.Argument(...,help="Directory of Source code to 
 
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"))  as progress_model:
         progress_model.add_task(description="Setting up Model", total=None)
-        tokenizer = RobertaTokenizer.from_pretrained('Salesforce/codet5-base-multi-sum')
-        model = T5ForConditionalGeneration.from_pretrained('Salesforce/codet5-base-multi-sum')
-    
+        tokenizer = RobertaTokenizer.from_pretrained('Salesforce/codet5-base-multi-sum') #load the tokenizer
+        model = T5ForConditionalGeneration.from_pretrained('Salesforce/codet5-base-multi-sum') #load the model
+
 
     # Inference
     for key in track(parsed_dict.keys(), "Generating Comments..."):
         for index, code_info in enumerate(parsed_dict[key]):
             input_ids = tokenizer(code_info["code"][:512], return_tensors="pt").input_ids
             generated_ids = model.generate(input_ids, max_length=512)
-            parsed_dict[key][index]["generated_comment"] = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
-    
+            parsed_dict[key][index]["generated_comment"] = tokenizer.decode(generated_ids[0], skip_special_tokens=True) #decode the generated comment
+
     # Saving File
-    for key in track(parsed_dict.keys(), "Saving Comments..."):
-        parsed_dict[key].sort(key=lambda x: x["line_no"])
-        mod_file_name = key[:key.rfind(".")] + "_mod" + key[key.rfind("."):]
+    for key in track(parsed_dict.keys(), "Saving Comments..."): #iterate through the dictionary
+        parsed_dict[key].sort(key=lambda x: x["line_no"]) #sort the dictionary by line number
+        mod_file_name = key[:key.rfind(".")] + "_mod" + key[key.rfind("."):] #get the modified file name
         line_counter = 1
         array_counter = 0
-        with open(key, "r") as og_file:
-            with open(mod_file_name, "w") as mod_file:
-                while(array_counter != len(parsed_dict[key])):
-                    file_ending = Path(key).suffix.upper()
-                    if(parsed_dict[key][array_counter]["line_no"] == line_counter):
-                        mod_file.write(f"{COMMENT_MAP[file_ending]} Generated: {parsed_dict[key][array_counter]['generated_comment']}\n")
+        with open(key, "r") as og_file: #open the original file
+            with open(mod_file_name, "w") as mod_file: #open the modified file
+                while(array_counter != len(parsed_dict[key])): #while the array counter is not at the end of the array
+                    file_ending = Path(key).suffix.upper() #get the file extension
+                    if(parsed_dict[key][array_counter]["line_no"] == line_counter): #if the line number is the same as the line counter
+                        mod_file.write(f"{COMMENT_MAP[file_ending]} Generated: {parsed_dict[key][array_counter]['generated_comment']}\n") #write the generated comment
                         array_counter +=1
                     else:
-                        mod_file.write(og_file.readline())
-                        line_counter +=1
-                mod_file.write(og_file.read())
-    
+                        mod_file.write(og_file.readline()) #write the original line
+                        line_counter +=1 #increment the line counter
+                mod_file.write(og_file.read()) #write the rest of the file
+
     pprint(f"Created [bold green]{len(parsed_dict)}[/bold green] files")
 
 
