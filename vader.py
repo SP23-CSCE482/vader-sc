@@ -1,6 +1,7 @@
 from FunctionExtract import core_extractor
 from transformers import RobertaTokenizer, T5ForConditionalGeneration
 import inspect
+import sys
 import typer
 from pathlib import Path
 from rich import print as pprint, console
@@ -33,11 +34,15 @@ COMMENT_MAP = {
 }
 
 
-def main(directory: Path = typer.Argument(...,help="Directory of Source code to Parse")):
+def main(
+        directory: Path = typer.Argument(..., help="Directory of Source code to Parse"),
+        ignore_documented: bool = typer.Option(False, "--ignore-documented", help = "Default False; ignores documented functions"),
+        remove_cpp_signatures: bool = typer.Option(False, "--remove-cpp-signatures", help = "Default False; removes signatures of C++ functions before processing")
+        ):
+    
     if not directory.is_dir():
         pprint("[bold red]Must be a directory[/bold red]")
         raise typer.Exit()
-    
     # Code Extracting
     code_info_df = None
 
@@ -49,7 +54,7 @@ def main(directory: Path = typer.Argument(...,help="Directory of Source code to 
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"))  as progress_parsing:
         progress_parsing.add_task(description="Extracting Functions", total=None)
         progress_parsing.add_task(description="Parsing Functions", total=None)
-        code_info_df = core_extractor.extractor(directory)
+        code_info_df = core_extractor.extractor(directory, ignoreDocumented = ignore_documented, removeCppSignatures = remove_cpp_signatures)
         parsed_dict = parse_df_to_dict(code_info_df)
 
     pprint(f"Found [bold green]{code_info_df.shape[0]}[/bold green] functions in [bold green]{len(parsed_dict.keys())}[/bold green] files")
