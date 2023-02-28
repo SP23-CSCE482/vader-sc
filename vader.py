@@ -25,7 +25,7 @@ def parse_df_to_dict(code_dataframe: pd.DataFrame):
             parsed_data[og_file_name] = [{"code":code, "line_no":line}]
     return parsed_data
 
-
+#languages
 COMMENT_MAP = {
     ".PY": "#",
     ".CPP": "//",
