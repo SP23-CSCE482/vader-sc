@@ -19,9 +19,6 @@ def parse_df_to_dict(code_dataframe: pd.DataFrame):
     """
     parsed_data = {}
     for file_id, code, line in zip(code_dataframe["Uniq ID"], code_dataframe["Code"], code_dataframe["Line"]):
-        print("file_id", file_id)
-        print("code", code)
-        print("line", line)
         og_file_name = file_id[:file_id.find("_", file_id.rfind("."))]
         if og_file_name in parsed_data:
             parsed_data[og_file_name].append({"code":code, "line_no":line})
