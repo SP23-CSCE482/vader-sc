@@ -1,59 +1,5569 @@
 CODE:
-bool is_permutation ( ForwardIterator1 first1, ForwardIterator1 last1, 
-                      ForwardIterator2 first2, ForwardIterator2 last2 )
-{
-//  How should I deal with the idea that ForwardIterator1::value_type
-//  and ForwardIterator2::value_type could be different? Define my own comparison predicate?
-    std::pair<ForwardIterator1, ForwardIterator2> eq = boost::algorithm::mismatch
-        ( first1, last1, first2, last2 );
-    if ( eq.first == last1 && eq.second == last2)
-        return true;
-    return boost::algorithm::detail::is_permutation_tag (
-        eq.first, last1, eq.second, last2, 
-        std::equal_to<typename std::iterator_traits<ForwardIterator1>::value_type> (),
-        typename std::iterator_traits<ForwardIterator1>::iterator_category (),
-        typename std::iterator_traits<ForwardIterator2>::iterator_category ());
-}
+void fill_histogram(
+    SrcView const& srcview,
+    histogram<T...>& hist,
+    std::size_t bin_width               = 1,
+    bool accumulate                     = false,
+    bool sparsefill                     = true,
+    bool applymask                      = false,
+    std::vector<std::vector<bool>> mask = {},
 COMMENT:
-/// \fn is_permutation ( ForwardIterator1 first, ForwardIterator1 last, 
-///                      ForwardIterator2 first2, ForwardIterator2 last2 )
-/// \brief Tests to see if the sequence [first,last) is a permutation of the sequence starting at first2
-///
-/// \param first1   The start of the input sequence
-/// \param last2    One past the end of the input sequence
-/// \param first2   The start of the second sequence
-/// \param last1    One past the end of the second sequence
-/// \note           This function is part of the C++2014 standard library.
+/// @param mask        Input  Mask as a 2D vector. Used only if prev argument specified
+/// @param lower       Input  Lower limit on the values in histogram (default numeric_limit::min() on axes)
+/// @param upper       Input  Upper limit on the values in histogram (default numeric_limit::max() on axes)
+/// @param setlimits   Input  Use specified limits if this is true (default is false)
+/// \brief Overload version of fill_histogram
+/// Takes a third argument to determine whether to clear container before filling.
+/// For eg, when there is a need to accumulate the histograms do
+/// \code
+/// fill_histogram(view(img), hist, true);
+/// \endcode
 
 
 
 CODE:
-bool is_permutation ( ForwardIterator1 first1, ForwardIterator1 last1,
-                      ForwardIterator2 first2, ForwardIterator2 last2, 
-                      BinaryPredicate pred )
+bool operator==(const point<T>& p1, const point<T>& p2)
 {
-    std::pair<ForwardIterator1, ForwardIterator2> eq = boost::algorithm::mismatch
-        ( first1, last1, first2, last2, pred );
-    if ( eq.first == last1 && eq.second == last2)
-        return true;
-    return boost::algorithm::detail::is_permutation_tag (
-        first1, last1, first2, last2, pred, 
-        typename std::iterator_traits<ForwardIterator1>::iterator_category (),
-        typename std::iterator_traits<ForwardIterator2>::iterator_category ());
+    return p1.x == p2.x && p1.y == p2.y;
 }
 COMMENT:
-/// \fn is_permutation ( ForwardIterator1 first, ForwardIterator1 last, 
-///                      ForwardIterator2 first2, ForwardIterator2 last2, 
-///                      BinaryPredicate p )
-/// \brief Tests to see if the sequence [first,last) is a permutation of the sequence starting at first2
-///
-/// \param first1   The start of the input sequence
-/// \param last1    One past the end of the input sequence
-/// \param first2   The start of the second sequence
-/// \param last2    One past the end of the second sequence
-/// \param pred     The predicate to compare elements with
-///
-/// \note           This function is part of the C++2014 standard library.
+/// @todo TODO: rename to dims_t or dimensions_t for purpose clarity?
+/// \ingroup PointModel
+
+
+
+CODE:
+    void operator()(const SrcP& src,DstP& dst) const {
+        using SrcColorSpace = typename color_space_type<SrcP>::type;
+        using DstColorSpace = typename color_space_type<DstP>::type;
+        default_color_converter_impl<SrcColorSpace,DstColorSpace>()(src,dst);
+    }
+COMMENT:
+/// @defgroup ColorConvert Color Space Converion
+/// \ingroup ColorSpaces
+/// \brief Support for conversion between pixels of different color spaces and channel depths
+/// \ingroup PixelAlgorithm ColorConvert
+/// \brief class for color-converting one pixel to another
+
+
+
+CODE:
+void non_overlapping_interpolated_clahe(
+    SrcView const& src_view,
+    DstView const& dst_view,
+    std::ptrdiff_t tile_width_x             = 20,
+    std::ptrdiff_t tile_width_y             = 20,
+    double clip_limit                       = 0.03,
+    std::size_t bin_width                   = 1.0,
+    bool mask                               = false,
+    std::vector<std::vector<bool>> src_mask = {})
+COMMENT:
+/// @param dst_view      Output  Output image view
+/// @param tile_width_x  Input   Tile width along x-axis to apply HE
+/// @param tile_width_y  Input   Tile width along x-axis to apply HE
+/// @param clip_limit    Input   Clipping limit to be applied
+/// @param bin_width     Input   Bin widths for histogram
+/// @param mask          Input   Specify if mask is to be used
+/// @param src_mask      Input   Mask on input image to ignore specified pixels
+/// \brief Performs local histogram equalization on tiles of size (tile_width_x, tile_width_y)
+///        Then uses the clip limit to redistribute excess pixels above the limit uniformly to
+///        other bins. The clip limit is specified as a fraction i.e. a bin's value is clipped
+///        if bin_value >= clip_limit * (Total number of pixels in the tile)
+
+
+
+CODE:
+void histogram_matching(
+    SrcView const& src_view,
+    ReferenceView const& ref_view,
+    DstView const& dst_view,
+    std::size_t bin_width = 1,
+    bool mask = false,
+    std::vector<std::vector<bool>> src_mask = {},
+COMMENT:
+/// @param src_view  INPUT source image view
+/// @param ref_view  INPUT Reference image view
+/// @param dst_view  OUTPUT Output image view
+/// @param bin_width INPUT Histogram bin width
+/// @param mask      INPUT Specify is mask is to be used
+/// @param src_mask  INPUT Mask vector over input image
+/// @param ref_mask  INPUT Mask vector over reference image
+/// \brief Overload for histogram matching algorithm, takes in both source, reference &
+///        destination image views and histogram matches the input image using the
+///        reference image.
+
+
+
+CODE:
+void histogram_equalization(
+    SrcView const& src_view,
+    DstView const& dst_view,
+    std::size_t bin_width = 1,
+    bool mask = false,
+    std::vector<std::vector<bool>> src_mask = {})
+COMMENT:
+/// @param src_view  INPUT source image view
+/// @param dst_view  OUTPUT Output image view
+/// @param bin_width INPUT Histogram bin width
+/// @param mask      INPUT Specify is mask is to be used
+/// @param src_mask  INPUT Mask vector over input image
+/// \brief Overload for histogram equalization algorithm, takes in both source & destination
+///        image views and histogram equalizes the input image.
+
+
+
+CODE:
+boost::gil::matrix3x2<F> center_rotate(boost::gil::point<T> dims,F rads)
+{
+    const F PI = F(3.141592653589793238);
+    const F c_theta = std::abs(std::cos(rads));
+    const F s_theta = std::abs(std::sin(rads));
+
+    // Bound checks for angle rads
+    while(rads + PI < 0)
+    {
+        rads = rads + PI;
+    }
+
+    while(rads > PI)
+    {
+        rads = rads - PI;
+    }
+
+    // Basic Rotation Matrix
+    boost::gil::matrix3x2<F> rotate = boost::gil::matrix3x2<F>::get_rotate(rads);
+
+    // Find distance for translating the image into view
+    boost::gil::matrix3x2<F> translation(0,0,0,0,0,0);
+    if(rads > 0)
+    {
+        translation.b = s_theta;
+    }
+    else
+    {
+        translation.c = s_theta;
+    }
+
+    if(std::abs(rads) > PI/2)
+    {
+        translation.a = c_theta;
+        translation.d = c_theta;
+    }
+
+    // To bring the complete image into view
+    boost::gil::matrix3x2<F> translate =
+        boost::gil::matrix3x2<F>::get_translate(-1 * dims * translation);
+
+    // To fit inside the source dimensions
+    boost::gil::matrix3x2<F> scale =
+        boost::gil::matrix3x2<F>::get_scale(
+            s_theta * dims.y / dims.x + c_theta ,
+            s_theta * dims.x / dims.y + c_theta
+        );
+
+    return scale *  translate * rotate;
+}
+COMMENT:
+/// @param  dims  dimensions of source image
+/// @param  rads  angle through which image is to be rotated
+/// @return   A transformation matrix for rotating the source image about its center
+/// \brief    rotates an image from its center point
+///           using consecutive affine transformations.
+
+
+
+CODE:
+    reader_base()
+    :_cc_policy()
+    {}
+COMMENT:
+/// @tparam FormatTag        A format tag, like jpeg_tag.
+/// @tparam ConversionPolicy Conversion policy, see coversion_policies.hpp.
+
+
+
+CODE:
+auto make_binary_tensor_expression( tensor_expression<T,EL> const& el, tensor_expression<T,ER> const& er, OP op)
+{
+	return binary_tensor_expression<T,EL,ER,OP>( el(), er(), op) ;
+}
+COMMENT:
+/// @brief helper function to simply instantiation of lambda proxy class
+
+
+
+CODE:
+auto make_binary_tensor_expression( matrix_expression<EL> const& el, tensor_expression<T,ER> const& er, OP op)
+{
+	return binary_tensor_expression<T,EL,ER,OP>( el(), er(), op) ;
+}
+COMMENT:
+/// @brief helper function to simply instantiation of lambda proxy class
+
+
+
+CODE:
+    bool operator()(const T& x, const U& y) const {
+        return boost::pfr::eq(x, y);
+    }
+COMMENT:
+/// @cond
+
+
+
+CODE:
+    bool operator()(const T& x, const T& y) const {
+        return boost::pfr::ne(x, y);
+    }
+COMMENT:
+/// @endcond
+/// \brief std::not_equal like comparator that returns \forcedlink{ne}(x, y)
+
+
+
+CODE:
+    bool operator()(const T& x, const U& y) const {
+        return boost::pfr::ne(x, y);
+    }
+COMMENT:
+/// @cond
+
+
+
+CODE:
+    bool operator()(const T& x, const T& y) const {
+        return boost::pfr::gt(x, y);
+    }
+COMMENT:
+/// @endcond
+/// \brief std::greater like comparator that returns \forcedlink{gt}(x, y)
+
+
+
+CODE:
+    bool operator()(const T& x, const U& y) const {
+        return boost::pfr::gt(x, y);
+    }
+COMMENT:
+/// @cond
+
+
+
+CODE:
+    bool operator()(const T& x, const T& y) const {
+        return boost::pfr::lt(x, y);
+    }
+COMMENT:
+/// @endcond
+/// \brief std::less like comparator that returns \forcedlink{lt}(x, y)
+
+
+
+CODE:
+    bool operator()(const T& x, const U& y) const {
+        return boost::pfr::lt(x, y);
+    }
+COMMENT:
+/// @cond
+
+
+
+CODE:
+    bool operator()(const T& x, const T& y) const {
+        return boost::pfr::ge(x, y);
+    }
+COMMENT:
+/// @endcond
+/// \brief std::greater_equal like comparator that returns \forcedlink{ge}(x, y)
+
+
+
+CODE:
+    bool operator()(const T& x, const U& y) const {
+        return boost::pfr::ge(x, y);
+    }
+COMMENT:
+/// @cond
+
+
+
+CODE:
+    bool operator()(const T& x, const T& y) const {
+        return boost::pfr::le(x, y);
+    }
+COMMENT:
+/// @endcond
+/// \brief std::less_equal like comparator that returns \forcedlink{le}(x, y)
+
+
+
+CODE:
+    bool operator()(const T& x, const U& y) const {
+        return boost::pfr::le(x, y);
+    }
+COMMENT:
+/// @cond
+
+
+
+CODE:
+    std::size_t operator()(const T& x) const {
+        return boost::pfr::hash_value(x);
+    }
+COMMENT:
+/// @endcond
+/// \brief std::hash like functor that returns \forcedlink{hash_value}(x)
+
+
+
+CODE:
+    template<typename string_type> void str_to(cnv::range<string_type> v, optional<   int_type>& r) const { str_to_i (v, r); }
+COMMENT:
+/// @details The converter offers a fairly decent overall performance and moderate formatting facilities.
+
+
+
+CODE:
+    to_str(in_type value_in, char* buf) const
+    {
+        const auto [ptr, ec] = [&]{
+            if constexpr (std::is_integral_v<in_type>) {
+                return std::to_chars(buf, buf + bufsize_, value_in, static_cast<int>(base_));
+            } else {
+                return std::to_chars(buf, buf + bufsize_, value_in, chars_format(), precision_);
+            }
+        }();
+        bool success = ec == std::errc{};
+
+        return cnv::range<char*>(buf, success ? ptr : buf);
+    }
+COMMENT:
+/// @details The converter offers good overall performance and moderate formatting facilities.
+
+
+
+CODE:
+    operator()(TypeIn const& value_in, boost::optional<TypeOut>& result_out) const
+    {
+        try
+        {
+            result_out = boost::lexical_cast<TypeOut>(value_in);
+        }
+        catch (boost::bad_lexical_cast const&)
+        {
+        }
+    }
+COMMENT:
+/// @brief boost::lexical_cast-based converter
+/// @details The purpose of the converter is to
+/// * Make use of the boost::lexical_cast functionality and performance that many people have become
+/// accustomed to and comfortable with;
+/// * Demonstrate how existing independent conversion/transformation-related facilities might be
+/// The converter can easily replace boost::lexical_cast, adding flexibility and convenience.
+
+
+
+CODE:
+::divide(it_index itx_first, it_index itx_last)
+{
+    size_t nblock = size_t(itx_last - itx_first);
+    if (nblock < 5)
+    {   sort_small(itx_first, itx_last);
+        return;
+    };
+    if ( nblock > 7)
+    {   if (is_sorted_forward(itx_first, itx_last)) return;
+        if (is_sorted_backward(itx_first, itx_last)) return;
+    };
+    size_t nblock1 = (nblock + 1) >> 1;
+    divide(itx_first, itx_first + nblock1);
+    divide(itx_first + nblock1, itx_last);
+    merge_range_pos(itx_first, itx_first + nblock1, itx_last);
+};
+COMMENT:
+/// @brief :
+/// @param Pos :
+/// @return
+
+
+
+CODE:
+::sort_small(it_index itx_first, it_index itx_last)
+{
+    size_t nblock = size_t(itx_last - itx_first);
+    assert(nblock > 0 and nblock < 5);
+    value_t *paux = ptr_circ->get_buffer();
+    range_it rng_data = get_group_range(*itx_first, nblock);
+
+    if (nblock < 3)
+    {
+        range_buf rng_aux(paux, paux + rng_data.size());
+        range_sort_data(rng_data, rng_aux, cmp);
+        return;
+    };
+
+    //--------------------------------------------------------------------
+    // division of range_data in two ranges for be sorted and merged
+    //--------------------------------------------------------------------
+    size_t nblock1 = (nblock + 1) >> 1;
+    range_it rng_data1 = get_group_range(*itx_first, nblock1);
+    range_it rng_data2(rng_data1.last, rng_data.last);
+    range_buf rng_aux1(paux, paux + rng_data1.size());
+    range_buf rng_aux2(paux, paux + rng_data2.size());
+
+    range_sort_data(rng_data2, rng_aux2, cmp);
+    range_sort_buffer(rng_data1, rng_aux1, cmp);
+    merge_half(rng_data, rng_aux1, rng_data2, cmp);
+};
+COMMENT:
+/// @brief :
+/// @param
+/// @param
+/// @param
+
+
+
+CODE:
+::is_sorted_forward(it_index itx_first, it_index itx_last)
+{
+    size_t nblock = size_t(itx_last - itx_first);
+    range_it rng = get_group_range(*itx_first, nblock);
+    size_t nelem = rng.size();
+    size_t min_process = (std::max)(BLOCK_SIZE, (nelem >> 3));
+
+    size_t nsorted1 = bsc::number_stable_sorted_forward (rng.first, rng.last,
+                                                         min_process, cmp);
+    if (nsorted1 == nelem) return true;
+    if (nsorted1 == 0) return false;
+
+    size_t nsorted2 = nelem - nsorted1;
+    Iter_t itaux = rng.first + nsorted1;
+    if (nsorted2 <= (BLOCK_SIZE << 1))
+    {
+        flat_stable_sort(itaux, rng.last, cmp, ptr_circ);
+        bscu::insert_sorted(rng.first, itaux, rng.last, cmp,
+                            ptr_circ->get_buffer());
+    }
+    else
+    {   // Adjust the size of the sorted data to a number of blocks
+        size_t mask = ~(BLOCK_SIZE - 1);
+        size_t nsorted1_adjust = nsorted1 & mask;
+        flat_stable_sort(rng.first + nsorted1_adjust, rng.last, cmp,
+                         ptr_circ);
+        size_t nblock1 = nsorted1_adjust >> Power2;
+        merge_range_pos(itx_first, itx_first + nblock1, itx_last);
+    };
+    return true;
+};
+COMMENT:
+/// @brief : return if the data are ordered,
+/// @param itx_first : iterator to the first block in the index
+/// @param itx_last : iterator to the last block in the index
+/// @return : true : the data are ordered false : not ordered
+
+
+
+CODE:
+::is_sorted_backward(it_index itx_first, it_index itx_last)
+{
+    size_t nblock = size_t(itx_last - itx_first);
+    range_it rng = get_group_range(*itx_first, nblock);
+
+    size_t nelem = rng.size();
+    size_t min_process = (std::max)(BLOCK_SIZE, (nelem >> 3));
+
+    size_t nsorted2 = bsc::number_stable_sorted_backward(rng.first, rng.last,
+                                                         min_process, cmp);
+    if (nsorted2 == nelem) return true;
+    if (nsorted2 == 0 ) return false;
+    Iter_t itaux = rng.last - nsorted2;
+    size_t nsorted1 = nelem - nsorted2;
+
+    if (nsorted1 <= (BLOCK_SIZE << 1))
+    {
+        flat_stable_sort(rng.first, itaux, cmp, ptr_circ);
+        bscu::insert_sorted_backward(rng.first, itaux, rng.last, cmp,
+                                     ptr_circ->get_buffer());
+    }
+    else
+    {   // Adjust the size of nsorted2 for to be a number of blocks
+        size_t nblock1 = (nsorted1 + BLOCK_SIZE - 1) >> Power2;
+        size_t nsorted1_adjust = (nblock1 << Power2);
+        flat_stable_sort(rng.first, rng.first + nsorted1_adjust, cmp,
+                         ptr_circ);
+        merge_range_pos(itx_first, itx_first + nblock1, itx_last);
+    };
+    return true;
+};
+COMMENT:
+/// @brief : return if the data are ordered,
+/// @param itx_first : iterator to the first block in the index
+/// @param itx_last : iterator to the last block in the index
+/// @return : true : the data are ordered false : not ordered
+
+
+
+CODE:
+inline void flat_stable_sort (Iter_t first, Iter_t last,
+                                 Compare cmp = Compare())
+{
+    flat::flat_stable_sort<Iter_t, Compare, 6> (first, last, cmp);
+};
+COMMENT:
+/// @brief This class is select the block size in the block_indirect_sort
+///        algorithm depending of the type and size of the data to sort
+
+
+
+CODE:
+inline void flat_stable_sort (Iter_t first, Iter_t last,
+                                 Compare cmp = Compare())
+{
+    flat::flat_stable_sort<Iter_t, Compare,
+                           block_size_fss<sizeof(value_iter<Iter_t> )>::data>
+        (first, last, cmp);
+};
+COMMENT:
+/// @brief This class is select the block size in the flat_stable_sort
+///        algorithm depending of the type and size of the data to sort
+
+
+
+CODE:
+::parallel_stable_sort (Iter_t first, Iter_t last, Compare comp,
+                        uint32_t nthread) : nelem(0), ptr(nullptr)
+{
+    range<Iter_t> range_initial(first, last);
+    assert(range_initial.valid());
+
+    nelem = range_initial.size();
+    size_t nptr = (nelem + 1) >> 1;
+
+    if (nelem < nelem_min or nthread < 2)
+    {
+        bss::spinsort<Iter_t, Compare>
+            (range_initial.first, range_initial.last, comp);
+        return;
+    };
+
+    //------------------- check if sort --------------------------------------
+    bool sw = true;
+    for (Iter_t it1 = first, it2 = first + 1;
+         it2 != last and (sw = not comp(*it2, *it1)); it1 = it2++);
+    if (sw) return;
+
+    //------------------- check if reverse sort ---------------------------
+    sw = true;
+    for (Iter_t it1 = first, it2 = first + 1;
+         it2 != last and (sw = comp(*it2, *it1)); it1 = it2++);
+    if (sw)
+    {
+        size_t nelem2 = nelem >> 1;
+        Iter_t it1 = first, it2 = last - 1;
+        for (size_t i = 0; i < nelem2; ++i)
+            std::swap(*(it1++), *(it2--));
+        return;
+    };
+
+    ptr = std::get_temporary_buffer<value_t>(nptr).first;
+    if (ptr == nullptr) throw std::bad_alloc();
+
+    //---------------------------------------------------------------------
+    //     Parallel Process
+    //---------------------------------------------------------------------
+    range<Iter_t> range_first(range_initial.first, range_initial.first + nptr);
+
+    range<Iter_t> range_second(range_initial.first + nptr, range_initial.last);
+
+    range<value_t *> range_buffer(ptr, ptr + nptr);
+
+    try
+    {
+        sample_sort<Iter_t, Compare>
+            (range_initial.first, range_initial.first + nptr,
+             comp, nthread, range_buffer);
+    } catch (std::bad_alloc &)
+    {
+        destroy_all();
+        throw std::bad_alloc();
+    };
+
+    try
+    {
+        sample_sort<Iter_t, Compare>
+            (range_initial.first + nptr,
+             range_initial.last, comp, nthread, range_buffer);
+    } catch (std::bad_alloc &)
+    {
+        destroy_all();
+        throw std::bad_alloc();
+    };
+
+    range_buffer = move_construct(range_buffer, range_first);
+    range_initial = merge_half(range_initial, range_buffer, range_second, comp);
+    destroy (range_buffer);
+
+
+    
+}; // end of constructor
+COMMENT:
+/// @brief constructor of the class
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+/// @param comp : object for to compare two elements pointed by Iter_t
+///                    iterators
+/// @param nthread : Number of threads to use in the process. When this value
+///                  is lower than 2, the sorting is done with 1 thread
+
+
+
+CODE:
+void parallel_stable_sort(Iter_t first, Iter_t last)
+{
+    typedef bscu::compare_iter<Iter_t> Compare;
+    stable_detail::parallel_stable_sort<Iter_t, Compare>(first, last);
+};
+COMMENT:
+/// @brief : parallel stable sort with 2 parameters
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+
+
+
+CODE:
+void parallel_stable_sort(Iter_t first, Iter_t last, uint32_t nthread)
+{
+    typedef bscu::compare_iter<Iter_t> Compare;
+    stable_detail::parallel_stable_sort<Iter_t, Compare>(first, last, nthread);
+};
+COMMENT:
+/// @brief parallel stable sort with 3 parameters. The third is the number 
+///        of threads
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+/// @param nthread : Number of threads to use in the process. When this value
+///                  is lower than 2, the sorting is done with 1 thread
+
+
+
+CODE:
+void parallel_stable_sort(Iter_t first, Iter_t last, Compare comp)
+{
+    stable_detail::parallel_stable_sort<Iter_t, Compare>(first, last, comp);
+};
+COMMENT:
+/// @brief : parallel stable sort with 3 parameters. The thisrd is the 
+///          comparison object
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+/// @param comp : object for to compare two elements pointed by Iter_t
+///               iterators
+
+
+
+CODE:
+void parallel_stable_sort (Iter_t first, Iter_t last, Compare comp,
+                          uint32_t nthread)
+{
+    stable_detail::parallel_stable_sort<Iter_t, Compare>
+                                                (first, last, comp, nthread);
+}
+COMMENT:
+/// @brief : parallel stable sort with 3 parameters. 
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+/// @param comp : object for to compare two elements pointed by Iter_t
+///               iterators
+/// @param nthread : Number of threads to use in the process. When this value
+///                  is lower than 2, the sorting is done with 1 thread
+
+
+
+CODE:
+static void insert_partial_sort (Iter1_t first, Iter1_t mid, Iter1_t last,
+                                 Compare comp, const range<Iter2_t> &rng_aux)
+{
+    //------------------------------------------------------------------------
+    //                 metaprogram
+    //------------------------------------------------------------------------
+    typedef value_iter<Iter1_t> value_t;
+    typedef value_iter<Iter2_t> value2_t;
+    static_assert (std::is_same<value_t, value2_t>::value,
+                    "Incompatible iterators\n");
+
+    //--------------------------------------------------------------------
+    //                   program
+    //--------------------------------------------------------------------
+    assert(size_t(last - mid) <= rng_aux.size());
+
+    if (mid == last) return;
+    //insertionsort ( mid, last, comp);
+    if (first == mid) return;
+
+    //------------------------------------------------------------------------
+    // creation of the vector of elements to insert and their position in the
+    // sorted part
+    // the data are inserted in rng_aux
+    //-----------------------------------------------------------------------
+    std::vector<Iter1_t> viter;
+    Iter2_t beta = rng_aux.first, data = rng_aux.first;
+
+    for (Iter1_t alpha = mid; alpha != last; ++alpha)
+        *(beta++) = std::move(*alpha);
+
+    size_t ndata = last - mid;
+
+    Iter1_t linf = first, lsup = mid;
+    for (uint32_t i = 0; i < ndata; ++i)
+    {
+        Iter1_t it1 = std::upper_bound(linf, lsup, *(data + i), comp);
+        viter.push_back(it1);
+        linf = it1;
+    };
+
+    // moving the elements
+    viter.push_back(mid);
+    for (uint32_t i = viter.size() - 1; i != 0; --i)
+    {
+        Iter1_t src = viter[i], limit = viter[i - 1];
+        Iter1_t dest = src + (i);
+        while (src != limit) *(--dest) = std::move(*(--src));
+        *(viter[i - 1] + (i - 1)) = std::move(*(data + (i - 1)));
+    };
+}
+COMMENT:
+/// @brief : Insertion sort of elements sorted
+/// @param first: iterator to the first element of the range
+/// @param mid : last pointer of the sorted data, and first pointer to the
+///               elements to insert
+/// @param last : iterator to the next element of the last in the range
+/// @param comp :
+/// @comments : the two ranges are sorted
+
+
+
+CODE:
+static bool check_stable_sort(const range<Iter1_t> &rng_data,
+                              const range<Iter2_t> &rng_aux, Compare comp)
+{
+    //------------------------------------------------------------------------
+    //              metaprogramming
+    //------------------------------------------------------------------------
+    typedef value_iter<Iter1_t> value_t;
+    typedef value_iter<Iter2_t> value2_t;
+    static_assert (std::is_same<value_t, value2_t>::value,
+                    "Incompatible iterators\n");
+
+    //------------------------------------------------------------------------
+    //                    program
+    //------------------------------------------------------------------------
+    // the maximun number of elements not ordered, for to be inserted in the
+    // sorted part
+    //const ptrdiff_t  min_insert_partial_sort = 32 ;
+    const size_t ndata = rng_data.size();
+    if (ndata < 32)
+    {
+        insert_sort(rng_data.first, rng_data.last, comp);
+        return true;
+    };
+    const size_t min_insert_partial_sort =
+                    ((ndata >> 3) < 33) ? 32 : (ndata >> 3);
+    if (ndata < 2) return true;
+
+    // check if sorted
+    bool sw = true;
+    Iter1_t it2 = rng_data.first + 1;
+    for (Iter1_t it1 = rng_data.first;
+                    it2 != rng_data.last and (sw = not comp(*it2, *it1)); it1 =
+                                    it2++)
+        ;
+    if (sw) return true;
+
+    // insert the elements between it1 and last
+    if (size_t(rng_data.last - it2) < min_insert_partial_sort)
+    {
+        sort_range_sort(range<Iter1_t>(it2, rng_data.last), rng_aux, comp);
+        insert_partial_sort(rng_data.first, it2, rng_data.last, comp, rng_aux);
+        return true;
+    };
+
+    // check if reverse sorted
+    if ((it2 != (rng_data.first + 1))) return false;
+    sw = true;
+    for (Iter1_t it1 = rng_data.first;
+                    it2 != rng_data.last and (sw = comp(*it2, *it1)); it1 =
+                                    it2++)
+        ;
+    if (size_t(rng_data.last - it2) >= min_insert_partial_sort) return false;
+
+    // reverse the elements between first and it1
+    size_t nreverse = it2 - rng_data.first;
+    Iter1_t alpha(rng_data.first), beta(it2 - 1), mid(
+                    rng_data.first + (nreverse >> 1));
+    while (alpha != mid)
+        std::swap(*(alpha++), *(beta--));
+
+    // insert the elements between it1 and last
+    if (it2 != rng_data.last)
+    {
+        sort_range_sort(range<Iter1_t>(it2, rng_data.last), rng_aux, comp);
+        insert_partial_sort(rng_data.first, it2, rng_data.last, comp, rng_aux);
+    };
+    return true;
+}
+COMMENT:
+/// @param range_input : range with the elements to sort
+/// @param range_buffer : range with the elements sorted
+/// @param comp : object for to compare two elements
+/// @param level : when is 1, sort with the insertionsort algorithm
+///                if not make a recursive call splitting the ranges
+/// @comments : if the number of levels is odd, the data are in the first
+/// parameter of range_sort, and the results appear in the second parameter
+/// If the number of levels is even, the data are in the second
+/// parameter of range_sort, and the results are in the same parameter
+
+
+
+CODE:
+static void range_sort(const range<Iter1_t> &range1,
+                       const range<Iter2_t> &range2, Compare comp,
+                       uint32_t level)
+{
+    //-----------------------------------------------------------------------
+    //                  metaprogram
+    //-----------------------------------------------------------------------
+    typedef value_iter<Iter1_t> value_t;
+    typedef value_iter<Iter2_t> value2_t;
+    static_assert (std::is_same<value_t, value2_t>::value,
+                    "Incompatible iterators\n");
+
+    //-----------------------------------------------------------------------
+    //                  program
+    //-----------------------------------------------------------------------
+    typedef range<Iter1_t> range_it1;
+    typedef range<Iter2_t> range_it2;
+    assert(range1.size() == range2.size() and level != 0);
+
+    //------------------- check if sort --------------------------------------
+    if (range1.size() > 1024)
+    {
+        if ((level & 1) == 0)
+        {
+            if (check_stable_sort(range2, range1, comp)) return;
+        }
+        else
+        {
+            if (check_stable_sort(range1, range2, comp))
+            {
+                move_forward(range2, range1);
+                return;
+            };
+        };
+    };
+
+    //------------------- normal process -----------------------------------
+    size_t nelem1 = (range1.size() + 1) >> 1;
+    range_it1 range_input1(range1.first, range1.first + nelem1),
+                           range_input2(range1.first + nelem1, range1.last);
+
+    if (level < 2)
+    {
+        insert_sort(range_input1.first, range_input1.last, comp);
+        insert_sort(range_input2.first, range_input2.last, comp);
+    }
+    else
+    {
+        range_sort (range_it2(range2.first, range2.first + nelem1),
+                    range_input1, comp, level - 1);
+
+        range_sort (range_it2(range2.first + nelem1, range2.last),
+                    range_input2, comp, level - 1);
+    };
+
+    merge(range2, range_input1, range_input2, comp);
+}
+COMMENT:
+/// @param range_input : range with the elements to sort
+/// @param range_buffer : range with the elements sorted
+/// @param comp : object for to compare two elements
+/// @param level : when is 1, sort with the insertionsort algorithm
+///                if not make a recursive call splitting the ranges
+/// @comments : if the number of levels is odd, the data are in the first
+/// parameter of range_sort, and the results appear in the second parameter
+/// If the number of levels is even, the data are in the second
+/// parameter of range_sort, and the results are in the same parameter
+/// The two ranges must have the same size
+
+
+
+CODE:
+static void sort_range_sort(const range<Iter1_t> &rng_data,
+                            const range<Iter2_t> &rng_aux, Compare comp)
+{
+    //-----------------------------------------------------------------------
+    //                  metaprogram
+    //-----------------------------------------------------------------------
+    typedef value_iter<Iter1_t> value_t;
+    typedef value_iter<Iter2_t> value2_t;
+    static_assert (std::is_same<value_t, value2_t>::value,
+                    "Incompatible iterators\n");
+
+    //------------------------------------------------------------------------
+    //                    program
+    //------------------------------------------------------------------------
+    // minimal number of element before to jump to insertionsort
+    static const uint32_t sort_min = 32;
+    if (rng_data.size() <= sort_min)
+    {
+        insert_sort(rng_data.first, rng_data.last, comp);
+        return;
+    };
+
+#ifdef __BS_DEBUG
+    assert (rng_aux.size () >= rng_data.size ());
+#endif
+
+    range<Iter2_t> rng_buffer(rng_aux.first, rng_aux.first + rng_data.size());
+    uint32_t nlevel =
+                    nbits64(((rng_data.size() + sort_min - 1) / sort_min) - 1);
+    //assert (nlevel != 0);
+
+    if ((nlevel & 1) == 0)
+    {
+        range_sort(rng_buffer, rng_data, comp, nlevel);
+    }
+    else
+    {
+        range_sort(rng_data, rng_buffer, comp, nlevel);
+        move_forward(rng_data, rng_buffer);
+    };
+}
+COMMENT:
+/// @brief this sort elements using the range_sort function and receiving a
+///        buffer of initialized memory
+/// @param rng_data : range with the elements to sort
+/// @param rng_aux : range of at least the same memory than rng_data used as
+///                  auxiliary memory in the sorting
+/// @param comp : object for to compare two elements
+
+
+
+CODE:
+::spinsort (Iter_t first, Iter_t last, Compare comp, value_t *paux, size_t naux)
+: ptr(paux), nptr(naux), construct(false), owner(false)
+{
+    range<Iter_t> range_input(first, last);
+    assert(range_input.valid());
+
+    size_t nelem = range_input.size();
+    owner = construct = false;
+
+    nptr = (nelem + 1) >> 1;
+    size_t nelem_1 = nptr;
+    size_t nelem_2 = nelem - nelem_1;
+
+    if (nelem <= (Sort_min << 1))
+    {
+        insert_sort(range_input.first, range_input.last, comp);
+        return;
+    };
+
+    //------------------- check if sort ---------------------------------
+    bool sw = true;
+    for (Iter_t it1 = first, it2 = first + 1; it2 != last
+         and (sw = not comp(*it2, *it1)); it1 = it2++) ;
+    if (sw) return;
+
+    //------------------- check if reverse sort -------------------------
+    sw = true;
+    for (Iter_t it1 = first, it2 = first + 1;
+         it2 != last and (sw = comp(*it2, *it1)); it1 = it2++);
+    if (sw)
+    {
+        size_t nelem2 = nelem >> 1;
+        Iter_t it1 = first, it2 = last - 1;
+        for (size_t i = 0; i < nelem2; ++i)
+            std::swap(*(it1++), *(it2--));
+        return;
+    };
+
+    if (ptr == nullptr)
+    {
+        ptr = std::get_temporary_buffer<value_t>(nptr).first;
+        if (ptr == nullptr) throw std::bad_alloc();
+        owner = true;
+    };
+    range_buf range_aux(ptr, (ptr + nptr));
+
+    //---------------------------------------------------------------------
+    //                  Process
+    //---------------------------------------------------------------------
+    uint32_t nlevel = nbits64(((nelem + Sort_min - 1) / Sort_min) - 1) - 1;
+    assert(nlevel != 0);
+
+    if ((nlevel & 1) == 1)
+    {
+        //----------------------------------------------------------------
+        // if the number of levels is odd, the data are in the first
+        // parameter of range_sort, and the results appear in the second
+        // parameter
+        //----------------------------------------------------------------
+        range_it range_1(first, first + nelem_2), range_2(first + nelem_2,
+                        last);
+        range_aux = move_construct(range_aux, range_2);
+        construct = true;
+
+        range_sort(range_aux, range_2, comp, nlevel);
+        range_buf rng_bx(range_aux.first, range_aux.first + nelem_2);
+
+        range_sort(range_1, rng_bx, comp, nlevel);
+        merge_half(range_input, rng_bx, range_2, comp);
+    }
+    else
+    {
+        //----------------------------------------------------------------
+        // If the number of levels is even, the data are in the second
+        // parameter of range_sort, and the results are in the same
+        //  parameter
+        //----------------------------------------------------------------
+        range_it range_1(first, first + nelem_1), range_2(first + nelem_1,
+                        last);
+        range_aux = move_construct(range_aux, range_1);
+        construct = true;
+
+        range_sort(range_1, range_aux, comp, nlevel);
+
+        range_1.last = range_1.first + range_2.size();
+        range_sort(range_1, range_2, comp, nlevel);
+        merge_half(range_input, range_aux, range_2, comp);
+    };
+};
+COMMENT:
+/// @brief constructor of the struct
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+/// @param comp : object for to compare two elements pointed by Iter_t
+///               iterators
+/// @param paux : pointer to the auxiliary memory provided. If nullptr, the
+///               memory is created inside the class
+/// @param naux : number of elements pointed by paux
+
+
+
+CODE:
+inline void spinsort (Iter_t first, Iter_t last, Compare comp = Compare())
+{
+    spin_detail::spinsort <Iter_t, Compare> (first, last, comp);
+};
+COMMENT:
+/// @brief this function implement a single thread stable sort
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+/// @param comp : object for to compare two elements pointed by Iter_t
+///               iterators
+
+
+
+CODE:
+inline void indirect_spinsort (Iter_t first, Iter_t last,
+                               Compare comp = Compare())
+{
+    typedef typename std::vector<Iter_t>::iterator itx_iter;
+    typedef common::less_ptr_no_null <Iter_t, Compare> itx_comp;
+    common::indirect_sort (spinsort<itx_iter, itx_comp>, first, last, comp);
+};
+COMMENT:
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+/// @param comp : object for to compare two elements pointed by Iter_t
+///               iterators
+
+
+
+CODE:
+::sample_sort (Iter_t first, Iter_t last, Compare cmp, uint32_t num_thread,
+               value_t *paux, size_t naux)
+: nthread(num_thread), owner(false), comp(cmp), global_range(first, last),
+  global_buf(nullptr, nullptr), error(false)
+{
+    assert((last - first) >= 0);
+    size_t nelem = size_t(last - first);
+    construct = false;
+    njob = 0;
+    vfuture.resize(nthread);
+
+    // Adjust when have many threads and only a few elements
+    while (nelem > thread_min and (nthread * nthread) > (nelem >> 3))
+    {
+        nthread /= 2;
+    };
+    ninterval = (nthread << 3);
+
+    if (nthread < 2 or nelem <= (thread_min))
+    {
+        bss::spinsort<Iter_t, Compare>(first, last, comp);
+        return;
+    };
+
+    //------------------- check if sort --------------------------------------
+    bool sw = true;
+    for (Iter_t it1 = first, it2 = first + 1;
+                    it2 != last and (sw = not comp(*it2, *it1)); it1 = it2++);
+    if (sw) return;
+
+    //------------------- check if reverse sort ---------------------------
+    sw = true;
+    for (Iter_t it1 = first, it2 = first + 1;
+                    it2 != last and (sw = comp(*it2, *it1)); it1 = it2++);
+    if (sw)
+    {
+        size_t nelem2 = nelem >> 1;
+        Iter_t it1 = first, it2 = last - 1;
+        for (size_t i = 0; i < nelem2; ++i)
+            std::swap(*(it1++), *(it2--));
+        return;
+    };
+
+    if (paux != nullptr)
+    {
+        assert(naux != 0);
+        global_buf.first = paux;
+        global_buf.last = paux + naux;
+        owner = false;
+    }
+    else
+    {
+        value_t *ptr = std::get_temporary_buffer<value_t>(nelem).first;
+        if (ptr == nullptr) throw std::bad_alloc();
+        owner = true;
+        global_buf = range_buf(ptr, ptr + nelem);
+    };
+    //------------------------------------------------------------------------
+    //                    PROCESS
+    //------------------------------------------------------------------------
+    try
+    {
+        initial_configuration();
+    } catch (std::bad_alloc &)
+    {
+        error = true;
+    };
+    if (not error)
+    {
+        first_merge();
+        construct = true;
+        final_merge();
+    };
+    if (error)
+    {
+        destroy_all();
+        throw std::bad_alloc();
+    };
+}
+COMMENT:
+/// @brief constructor of the class
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+/// @param cmp : object for to compare two elements pointed by Iter_t iterators
+/// @param num_thread : Number of threads to use in the process. When this value
+///                     is lower than 2, the sorting is done with 1 thread
+/// @param paux : pointer to the auxiliary memory. If nullptr, the memory is
+///               created inside the class
+/// @param naux : number of elements of the memory pointed by paux
+
+
+
+CODE:
+void sample_sort<Iter_t, Compare>::destroy_all(void)
+{
+    if (construct)
+    {
+        destroy(global_buf);
+        construct = false;
+    }
+    if (global_buf.first != nullptr and owner)
+        std::return_temporary_buffer(global_buf.first);
+}
+COMMENT:
+/// @brief destructor of the class. The utility is to destroy the temporary
+///        buffer used in the sorting process
+
+
+
+CODE:
+void sample_sort<Iter_t, Compare>::initial_configuration(void)
+{
+    std::vector<range_it> vmem_thread;
+    std::vector<range_buf> vbuf_thread;
+    size_t nelem = global_range.size();
+
+    //------------------------------------------------------------------------
+    size_t cupo = nelem / nthread;
+    Iter_t it_first = global_range.first;
+    value_t *buf_first = global_buf.first;
+    vmem_thread.reserve(nthread + 1);
+    vbuf_thread.reserve(nthread + 1);
+
+    for (uint32_t i = 0; i < (nthread - 1); ++i, it_first += cupo, buf_first +=
+                    cupo)
+    {
+        vmem_thread.emplace_back(it_first, it_first + cupo);
+        vbuf_thread.emplace_back(buf_first, buf_first + cupo);
+    };
+
+    vmem_thread.emplace_back(it_first, global_range.last);
+    vbuf_thread.emplace_back(buf_first, global_buf.last);
+
+    //------------------------------------------------------------------------
+    // Sorting of the ranges
+    //------------------------------------------------------------------------
+    std::vector<std::future<void>> vfuture(nthread);
+
+    for (uint32_t i = 0; i < nthread; ++i)
+    {
+        auto func = [=]()
+        {
+            bss::spinsort<Iter_t, Compare> (vmem_thread[i].first,
+                            vmem_thread[i].last, comp,
+                            vbuf_thread[i]);
+        };
+        vfuture[i] = std::async(std::launch::async, func);
+    };
+
+    for (uint32_t i = 0; i < nthread; ++i)
+        vfuture[i].get();
+
+    //------------------------------------------------------------------------
+    // Obtain the vector of milestones
+    //------------------------------------------------------------------------
+    std::vector<Iter_t> vsample;
+    vsample.reserve(nthread * (ninterval - 1));
+
+    for (uint32_t i = 0; i < nthread; ++i)
+    {
+        size_t distance = vmem_thread[i].size() / ninterval;
+        for (size_t j = 1, pos = distance; j < ninterval; ++j, pos += distance)
+        {
+            vsample.push_back(vmem_thread[i].first + pos);
+        };
+    };
+    typedef less_ptr_no_null<Iter_t, Compare> compare_ptr;
+    typedef typename std::vector<Iter_t>::iterator it_to_it;
+
+    bss::spinsort<it_to_it, compare_ptr>(vsample.begin(), vsample.end(),
+                    compare_ptr(comp));
+
+    //------------------------------------------------------------------------
+    // Create the final milestone vector
+    //------------------------------------------------------------------------
+    std::vector<Iter_t> vmilestone;
+    vmilestone.reserve(ninterval);
+
+    for (uint32_t pos = nthread >> 1; pos < vsample.size(); pos += nthread)
+    {
+        vmilestone.push_back(vsample[pos]);
+    };
+
+    //------------------------------------------------------------------------
+    // Creation of the first vector of ranges
+    //------------------------------------------------------------------------
+    std::vector<std::vector<range<Iter_t>>>vv_range_first (nthread);
+
+    for (uint32_t i = 0; i < nthread; ++i)
+    {
+        Iter_t itaux = vmem_thread[i].first;
+
+        for (uint32_t k = 0; k < (ninterval - 1); ++k)
+        {
+            Iter_t it2 = std::upper_bound(itaux, vmem_thread[i].last,
+                            *vmilestone[k], comp);
+
+            vv_range_first[i].emplace_back(itaux, it2);
+            itaux = it2;
+        };
+        vv_range_first[i].emplace_back(itaux, vmem_thread[i].last);
+    };
+
+    //------------------------------------------------------------------------
+    // Copy in buffer and  creation of the final matrix of ranges
+    //------------------------------------------------------------------------
+    vv_range_it.resize(ninterval);
+    vv_range_buf.resize(ninterval);
+    vrange_it_ini.reserve(ninterval);
+    vrange_buf_ini.reserve(ninterval);
+
+    for (uint32_t i = 0; i < ninterval; ++i)
+    {
+        vv_range_it[i].reserve(nthread);
+        vv_range_buf[i].reserve(nthread);
+    };
+
+    Iter_t it = global_range.first;
+    value_t *it_buf = global_buf.first;
+
+    for (uint32_t k = 0; k < ninterval; ++k)
+    {
+        size_t nelem_interval = 0;
+
+        for (uint32_t i = 0; i < nthread; ++i)
+        {
+            size_t nelem_range = vv_range_first[i][k].size();
+            if (nelem_range != 0)
+            {
+                vv_range_it[k].push_back(vv_range_first[i][k]);
+            };
+            nelem_interval += nelem_range;
+        };
+
+        vrange_it_ini.emplace_back(it, it + nelem_interval);
+        vrange_buf_ini.emplace_back(it_buf, it_buf + nelem_interval);
+
+        it += nelem_interval;
+        it_buf += nelem_interval;
+    };
+}
+COMMENT:
+/// @brief Create the internal data structures, and obtain the inital set of
+///        ranges to merge
+
+
+
+CODE:
+void sample_sort(Iter_t first, Iter_t last)
+{
+    typedef compare_iter<Iter_t> Compare;
+    sample_detail::sample_sort<Iter_t, Compare>(first, last);
+};
+COMMENT:
+/// @brief parallel sample sort  algorithm (stable sort)
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+
+
+
+CODE:
+void sample_sort(Iter_t first, Iter_t last, uint32_t nthread)
+{
+    typedef compare_iter<Iter_t> Compare;
+    sample_detail::sample_sort<Iter_t, Compare>(first, last, nthread);
+};
+COMMENT:
+/// @brief parallel sample sort  algorithm (stable sort)
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+/// @param nthread : Number of threads to use in the process. When this value
+///                  is lower than 2, the sorting is done with 1 thread
+
+
+
+CODE:
+void sample_sort(Iter_t first, Iter_t last, Compare comp)
+{
+    sample_detail::sample_sort<Iter_t, Compare>(first, last, comp);
+};
+COMMENT:
+/// @brief parallel sample sort  algorithm (stable sort)
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+/// @param comp : object for to compare two elements pointed by Iter_t
+///               iterators
+
+
+
+CODE:
+void sample_sort(Iter_t first, Iter_t last, Compare comp, uint32_t nthread)
+{
+    sample_detail::sample_sort<Iter_t, Compare>(first, last, comp, nthread);
+};
+COMMENT:
+/// @brief parallel sample sort  algorithm (stable sort)
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+/// @param comp : object for to compare two elements pointed by Iter_t
+///               iterators
+/// @param nthread : Number of threads to use in the process. When this value
+///                  is lower than 2, the sorting is done with 1 thread
+
+
+
+CODE:
+time_point now ( ) {   return chrn::steady_clock::now( ); };
+COMMENT:
+/// @brief return the time system in a internal format ( steady_clock)
+/// @return time in steady_clock format
+
+
+
+CODE:
+double subtract_time  ( const time_point & t1, const time_point & t2 )
+{   //------------------------ begin ---------------------------------
+    chrn::duration<double> time_span =
+                chrn::duration_cast < chrn::duration < double > > ( t1 - t2 );
+    return  time_span.count( );
+};
+COMMENT:
+/// @brief return the time system in a internal format ( steady_clock)
+/// @return time in steady_clock format
+/// @brief return the time in double format
+/// @param [in] t1 : first  time in time_point format
+/// @param [in] t2 : second time in time_point format
+/// @return time in seconds of the difference of t1 - t2
+
+
+
+CODE:
+::merge_range_pos(it_index itx_first, it_index itx_mid,it_index itx_last)
+{
+    assert((itx_last - itx_mid) >= 0 and (itx_mid - itx_first) >= 0);
+
+    size_t nelemA = (itx_mid - itx_first), nelemB = (itx_last - itx_mid);
+    if (nelemA == 0 or nelemB == 0) return;
+
+    //-------------------------------------------------------------------
+    // Create two index with the position of the blocks to merge
+    //-------------------------------------------------------------------
+    std::vector<size_t> indexA, indexB;
+    indexA.reserve(nelemA + 1);
+    indexB.reserve(nelemB);
+
+    indexA.insert(indexA.begin(), itx_first, itx_mid);
+    indexB.insert(indexB.begin(), itx_mid, itx_last);
+
+    it_index itx_out = itx_first;
+    it_index itxA = indexA.begin(), itxB = indexB.begin();
+    range_it rngA, rngB;
+    Iter_t itA = global_range.first, itB = global_range.first;
+    bool validA = false, validB = false;
+
+    while (itxA != indexA.end() and itxB != indexB.end())
+    {   //----------------------------------------------------------------
+        // Load valid ranges from the itxA and ItxB positions
+        //----------------------------------------------------------------
+        if (not validA)
+        {
+            rngA = get_range(*itxA);
+            itA = rngA.first;
+            validA = true;
+        };
+        if (not validB)
+        {
+            rngB = get_range(*itxB);
+            itB = rngB.first;
+            validB = true;
+        };
+        //----------------------------------------------------------------
+        // If don't have merge betweeen the  blocks, pass directly the
+        // position of the block to itx_out
+        //----------------------------------------------------------------
+        if (ptr_circ->size() == 0)
+        {
+            if (not cmp(*rngB.front(), *rngA.back()))
+            {
+                *(itx_out++) = *(itxA++);
+                validA = false;
+                continue;
+            };
+            if (cmp(*rngB.back(), *rngA.front()))
+            {
+                if (not is_tail(*itxB))
+                    *(itx_out++) = *itxB;
+                else ptr_circ->push_move_back(rngB.first, rngB.size());
+                ++itxB;
+                validB = false;
+                continue;
+            };
+        };
+        //----------------------------------------------------------------
+        // Normal merge
+        //----------------------------------------------------------------
+        bool side = util::merge_circular(itA, rngA.last, itB, rngB.last,
+                        *ptr_circ, cmp, itA, itB);
+        if (side)
+        {   // rngA is finished
+            ptr_circ->pop_move_front(rngA.first, rngA.size());
+            *(itx_out++) = *(itxA++);
+            validA = false;
+        }
+        else
+        {   // rngB is finished
+            if (not is_tail(*itxB))
+            {
+                ptr_circ->pop_move_front(rngB.first, rngB.size());
+                *(itx_out++) = *itxB;
+            };
+            ++itxB;
+            validB = false;
+        };
+    }; // end while
+
+    if (itxA == indexA.end())
+    {   // the index A is finished
+        rngB = get_range(*itxB);
+        ptr_circ->pop_move_front(rngB.first, ptr_circ->size());
+        while (itxB != indexB.end())
+            *(itx_out++) = *(itxB++);
+    }
+    else
+    {   // The list B is finished
+        rngA = get_range(*itxA);
+        if (ntail != 0 and indexB.back() == (nblock - 1)) // exist tail
+        {   // add the tail block to indexA, and shift the element
+            indexA.push_back(indexB.back());
+            size_t numA = size_t(itA - rngA.first);
+            ptr_circ->pop_move_back(rngA.first, numA);
+            move_range_pos_backward(itxA, indexA.end(), ntail);
+        };
+
+        ptr_circ->pop_move_front(rngA.first, ptr_circ->size());
+        while (itxA != indexA.end())
+            *(itx_out++) = *(itxA++);
+    };
+};
+COMMENT:
+/// @brief
+/// @param
+/// @return
+
+
+
+CODE:
+::move_range_pos_backward(it_index itx_first, it_index itx_last, size_t npos)
+{
+    assert((itx_last - itx_first) >= 0 and npos <= BLOCK_SIZE);
+
+    //--------------------------------------------------------------------
+    // Processing the last block. Must be ready fore to accept npos
+    // elements from the upper block
+    //--------------------------------------------------------------------
+    range_it rng1 = get_range(*(itx_last - 1));
+    assert(rng1.size() >= npos);
+    if (rng1.size() > npos)
+    {
+        size_t nmove = rng1.size() - npos;
+        util::move_backward(rng1.last, rng1.first, rng1.first + nmove);
+    };
+    //--------------------------------------------------------------------
+    // Movement of elements between blocks
+    //--------------------------------------------------------------------
+    for (it_index itx = itx_last - 1; itx != itx_first;)
+    {
+        --itx;
+        range_it rng2 = rng1;
+        rng1 = get_range(*itx);
+        Iter_t it_mid1 = rng1.last - npos, it_mid2 = rng2.first + npos;
+        util::move_backward(it_mid2, it_mid1, rng1.last);
+        util::move_backward(rng1.last, rng1.first, it_mid1);
+    };
+};
+COMMENT:
+/// @brief Move backward the elements of a range of blocks in a index
+/// @param itx_first : iterator to the position of the first block
+/// @param  itx_last : itertor to the position of the last block
+/// @param  npos : number of positions to move. Must be less than BLOCK_SIZE
+/// @return
+
+
+
+CODE:
+::rearrange_with_index(void)
+{   //--------------------------------------------------------------------
+    //                     Code
+    //--------------------------------------------------------------------
+    size_t pos_dest, pos_src, pos_ini;
+    size_t nelem = index.size();
+
+    ptr_circ->clear();
+    value_t * aux = ptr_circ->get_buffer();
+    range_buf rng_buf(aux, aux + ptr_circ->NMAX);
+
+    pos_ini = 0;
+    while (pos_ini < nelem)
+    {
+        while (pos_ini < nelem and index[pos_ini] == pos_ini)
+            ++pos_ini;
+        if (pos_ini == nelem) return;
+        pos_dest = pos_src = pos_ini;
+        rng_buf = move_forward(rng_buf, get_range(pos_ini));
+        pos_src = index[pos_ini];
+
+        while (pos_src != pos_ini)
+        {
+            move_forward(get_range(pos_dest), get_range(pos_src));
+            index[pos_dest] = pos_dest;
+            pos_dest = pos_src;
+            pos_src = index[pos_src];
+        };
+        move_forward(get_range(pos_dest), rng_buf);
+        index[pos_dest] = pos_dest;
+        ++pos_ini;
+    };
+};
+COMMENT:
+/// @brief rearrange the blocks with the relative positions of the index
+/// @param
+/// @param
+/// @param
+/// @return
+
+
+
+CODE:
+inline bool less_range(Iter_t it1, uint32_t pos1, Iter_t it2, uint32_t pos2,
+                       Compare comp = Compare())
+{
+    return (comp(*it1, *it2)) ? true :
+           (pos2 < pos1) ? false : not (comp(*it2, *it1));
+};
+COMMENT:
+/// @brief Compare the elements pointed by it1 and it2, and if they
+///        are equals, compare their position, doing a stable comparison
+/// @param it1 : iterator to the first element
+/// @param pos1 : position of the object pointed by it1
+/// @param it2 : iterator to the second element
+/// @param pos2 : position of the element pointed by it2
+/// @param comp : comparison object
+/// @return result of the comparison
+
+
+
+CODE:
+range<Iter1_t> full_merge4(const range<Iter1_t> &rdest,
+                           range<Iter2_t> vrange_input[4],
+                           uint32_t nrange_input, Compare comp)
+{
+    typedef range<Iter1_t> range1_t;
+    typedef util::value_iter<Iter1_t> type1;
+    typedef util::value_iter<Iter2_t> type2;
+    static_assert (std::is_same< type1, type2 >::value,
+                    "Incompatible iterators\n");
+
+    size_t ndest = 0;
+    uint32_t i = 0;
+    while (i < nrange_input)
+    {
+        if (vrange_input[i].size() != 0)
+        {
+            ndest += vrange_input[i++].size();
+        }
+        else
+        {
+            for (uint32_t k = i + 1; k < nrange_input; ++k)
+            {
+                vrange_input[k - 1] = vrange_input[k];
+            };
+            --nrange_input;
+        };
+    };
+
+    if (nrange_input == 0) return range1_t(rdest.first, rdest.first);
+    if (nrange_input == 1) return move_forward(rdest, vrange_input[0]);
+    if (nrange_input == 2)
+    {
+        return merge(rdest, vrange_input[0], vrange_input[1], comp);
+    };
+
+    //------------------------------------------------------------------------
+    // Initial sort
+    //------------------------------------------------------------------------
+    uint32_t pos[4] =
+    { 0, 1, 2, 3 }, npos = nrange_input;
+
+    //-----------------------------------------------------------------------
+    // thanks to Steven Ross by their suggestion about the optimal
+    // sorting networks
+    //-----------------------------------------------------------------------
+    if (less_range(vrange_input[pos[1]].first, pos[1],
+                    vrange_input[pos[0]].first, pos[0], comp))
+    {
+        std::swap(pos[0], pos[1]);
+    };
+    if (npos == 4 and less_range(vrange_input[pos[3]].first, pos[3],
+                                 vrange_input[pos[2]].first, pos[2], comp))
+    {
+        std::swap(pos[3], pos[2]);
+    };
+    if (less_range (vrange_input[pos[2]].first, pos[2],
+                    vrange_input[pos[0]].first, pos[0], comp))
+    {
+        std::swap(pos[0], pos[2]);
+    };
+    if (npos == 4
+                    and less_range (vrange_input[pos[3]].first, pos[3],
+                                    vrange_input[pos[1]].first, pos[1], comp))
+    {
+        std::swap(pos[1], pos[3]);
+    };
+    if (less_range (vrange_input[pos[2]].first, pos[2],
+                    vrange_input[pos[1]].first, pos[1], comp))
+    {
+        std::swap(pos[1], pos[2]);
+    };
+
+    Iter1_t it_dest = rdest.first;
+    while (npos > 2)
+    {
+        *(it_dest++) = std::move(*(vrange_input[pos[0]].first++));
+        if (vrange_input[pos[0]].size() == 0)
+        {
+            pos[0] = pos[1];
+            pos[1] = pos[2];
+            pos[2] = pos[3];
+            --npos;
+        }
+        else
+        {
+            if (less_range(vrange_input[pos[1]].first, pos[1],
+                            vrange_input[pos[0]].first, pos[0], comp))
+            {
+                std::swap(pos[0], pos[1]);
+                if (less_range(vrange_input[pos[2]].first, pos[2],
+                                vrange_input[pos[1]].first, pos[1], comp))
+                {
+                    std::swap(pos[1], pos[2]);
+                    if (npos == 4
+                                    and less_range(vrange_input[pos[3]].first,
+                                                    pos[3],
+                                                    vrange_input[pos[2]].first,
+                                                    pos[2], comp))
+                    {
+                        std::swap(pos[2], pos[3]);
+                    };
+                };
+            };
+        };
+    };
+
+    range1_t raux1(rdest.first, it_dest), raux2(it_dest, rdest.last);
+    if (pos[0] < pos[1])
+    {
+        return concat(raux1,merge(raux2, vrange_input[pos[0]], 
+                                  vrange_input[pos[1]], comp));
+    }
+    else
+    {
+        return concat(raux1, merge (raux2, vrange_input[pos[1]], 
+                                    vrange_input[pos[0]], comp));
+    };
+};
+COMMENT:
+/// @brief Merge four ranges
+/// @param dest: range where move the elements merged. Their size must be
+///              greater or equal than the sum of the sizes of the ranges
+///              in vrange_input
+/// @param vrange_input : array of ranges to merge
+/// @param nrange_input : number of ranges in vrange_input
+/// @param comp : comparison object
+/// @return range with all the elements moved with the size adjusted
+
+
+
+CODE:
+range<Value_t *> uninit_full_merge4(const range<Value_t *> &dest,
+                                    range<Iter_t> vrange_input[4],
+                                    uint32_t nrange_input, Compare comp)
+{
+    typedef util::value_iter<Iter_t> type1;
+    static_assert (std::is_same< type1, Value_t >::value,
+                    "Incompatible iterators\n");
+
+    size_t ndest = 0;
+    uint32_t i = 0;
+    while (i < nrange_input)
+    {
+        if (vrange_input[i].size() != 0)
+        {
+            ndest += vrange_input[i++].size();
+        }
+        else
+        {
+            for (uint32_t k = i + 1; k < nrange_input; ++k)
+            {
+                vrange_input[k - 1] = vrange_input[k];
+            };
+            --nrange_input;
+        };
+    };
+    if (nrange_input == 0) return range<Value_t *>(dest.first, dest.first);
+    if (nrange_input == 1) return move_construct(dest, vrange_input[0]);
+    if (nrange_input == 2)
+    {
+        return merge_construct(dest, vrange_input[0], vrange_input[1], comp);
+    };
+
+    //------------------------------------------------------------------------
+    // Initial sort
+    //------------------------------------------------------------------------
+    uint32_t pos[4] = { 0, 1, 2, 3 }, npos = nrange_input;
+
+    //-----------------------------------------------------------------------
+    // thanks to Steven Ross by their suggestion about the optimal
+    // sorting networks
+    //-----------------------------------------------------------------------
+    if (less_range(vrange_input[pos[1]].first, pos[1],
+                    vrange_input[pos[0]].first, pos[0], comp))
+    {
+        std::swap(pos[0], pos[1]);
+    };
+    if (npos == 4  and less_range(vrange_input[pos[3]].first, pos[3],
+                                  vrange_input[pos[2]].first, pos[2], comp))
+    {
+        std::swap(pos[3], pos[2]);
+    };
+    if (less_range(vrange_input[pos[2]].first, pos[2],
+                    vrange_input[pos[0]].first, pos[0], comp))
+    {
+        std::swap(pos[0], pos[2]);
+    };
+    if (npos == 4 and less_range(vrange_input[pos[3]].first, pos[3],
+                                 vrange_input[pos[1]].first, pos[1], comp))
+    {
+        std::swap(pos[1], pos[3]);
+    };
+    if (less_range(vrange_input[pos[2]].first, pos[2],
+                    vrange_input[pos[1]].first, pos[1], comp))
+    {
+        std::swap(pos[1], pos[2]);
+    };
+
+    Value_t *it_dest = dest.first;
+    while (npos > 2)
+    {
+        util::construct_object(&(*(it_dest++)),
+                        std::move(*(vrange_input[pos[0]].first++)));
+        if (vrange_input[pos[0]].size() == 0)
+        {
+            pos[0] = pos[1];
+            pos[1] = pos[2];
+            pos[2] = pos[3];
+            --npos;
+        }
+        else
+        {
+            if (less_range (vrange_input[pos[1]].first, pos[1],
+                            vrange_input[pos[0]].first, pos[0], comp))
+            {
+                std::swap(pos[0], pos[1]);
+                if (less_range (vrange_input[pos[2]].first, pos[2],
+                                vrange_input[pos[1]].first, pos[1], comp))
+                {
+                    std::swap(pos[1], pos[2]);
+                    if (npos == 4 and less_range(vrange_input[pos[3]].first,
+                                                 pos[3],
+                                                 vrange_input[pos[2]].first,
+                                                 pos[2], comp))
+                    {
+                        std::swap(pos[2], pos[3]);
+                    };
+                };
+            };
+        };
+    }; // end while (npos > 2)
+
+    range<Value_t *> raux1(dest.first, it_dest), raux2(it_dest, dest.last);
+    if (pos[0] < pos[1])
+    {
+        return concat(raux1,
+                      merge_construct(raux2, vrange_input[pos[0]],
+                                      vrange_input[pos[1]], comp));
+    }
+    else
+    {
+        return concat(raux1,
+                      merge_construct(raux2, vrange_input[pos[1]],
+                                      vrange_input[pos[0]], comp));
+    };
+};
+COMMENT:
+/// @brief Merge four ranges and put the result in uninitialized memory
+/// @param dest: range where create and move the elements merged. Their
+///              size must be greater or equal than the sum of the sizes
+///              of the ranges in the array R
+/// @param vrange_input : array of ranges to merge
+/// @param nrange_input : number of ranges in vrange_input
+/// @param comp : comparison object
+/// @return range with all the elements move with the size adjusted
+
+
+
+CODE:
+void merge_level4(range<Iter1_t> dest, std::vector<range<Iter2_t> > &v_input,
+                  std::vector<range<Iter1_t> > &v_output, Compare comp)
+{
+    typedef range<Iter1_t> range1_t;
+    typedef util::value_iter<Iter1_t> type1;
+    typedef util::value_iter<Iter2_t> type2;
+    static_assert (std::is_same< type1, type2 >::value,
+                    "Incompatible iterators\n");
+
+    v_output.clear();
+    if (v_input.size() == 0) return;
+    if (v_input.size() == 1)
+    {
+        v_output.emplace_back(move_forward(dest, v_input[0]));
+        return;
+    };
+
+    uint32_t nrange = v_input.size();
+    uint32_t pos_ini = 0;
+    while (pos_ini < v_input.size())
+    {
+        uint32_t nmerge = (nrange + 3) >> 2;
+        uint32_t nelem = (nrange + nmerge - 1) / nmerge;
+        range1_t rz = full_merge4(dest, &v_input[pos_ini], nelem, comp);
+        v_output.emplace_back(rz);
+        dest.first = rz.last;
+        pos_ini += nelem;
+        nrange -= nelem;
+    };
+    return;
+};
+COMMENT:
+/// @brief merge the ranges in the vector v_input with the full_merge4 function.
+///        The v_output vector is used as auxiliary memory in the internal
+///        process. The final results is in the dest range.
+///        All the ranges of v_output are inside the range dest
+/// @param dest : range where move the elements merged
+/// @param v_input : vector of ranges to merge
+/// @param v_output : vector of ranges obtained
+/// @param comp : comparison object
+/// @return range with all the elements moved
+
+
+
+CODE:
+void uninit_merge_level4(range<Value_t *> dest,
+                         std::vector<range<Iter_t> > &v_input,
+                         std::vector<range<Value_t *> > &v_output, Compare comp)
+{
+    typedef range<Value_t *> range1_t;
+    typedef util::value_iter<Iter_t> type1;
+    static_assert (std::is_same< type1, Value_t >::value,
+                    "Incompatible iterators\n");
+
+    v_output.clear();
+    if (v_input.size() == 0) return;
+    if (v_input.size() == 1)
+    {
+        v_output.emplace_back(move_construct(dest, v_input[0]));
+        return;
+    };
+
+    uint32_t nrange = v_input.size();
+    uint32_t pos_ini = 0;
+    while (pos_ini < v_input.size())
+    {
+        uint32_t nmerge = (nrange + 3) >> 2;
+        uint32_t nelem = (nrange + nmerge - 1) / nmerge;
+        range1_t rz = uninit_full_merge4(dest, &v_input[pos_ini], nelem, comp);
+        v_output.emplace_back(rz);
+        dest.first = rz.last;
+        pos_ini += nelem;
+        nrange -= nelem;
+    };
+    return;
+};
+COMMENT:
+/// @brief merge the ranges moving the objects and constructing them in
+///        uninitialized memory, in the vector v_input
+///        using full_merge4. The v_output vector is used as auxiliary memory
+///        in the internal process. The final results is in the dest range.
+///        All the ranges of v_output are inside the range dest
+/// @param dest : range where move the elements merged
+/// @param v_input : vector of ranges to merge
+/// @param v_output : vector of ranges obtained
+/// @param comp : comparison object
+/// @return range with all the elements moved and constructed
+
+
+
+CODE:
+range<Iter2_t> merge_vector4(range<Iter1_t> range_input,
+                             range<Iter2_t> range_output,
+                             std::vector<range<Iter1_t> > &v_input,
+                             std::vector<range<Iter2_t> > &v_output,
+                             Compare comp)
+{
+    typedef range<Iter2_t> range2_t;
+    typedef util::value_iter<Iter1_t> type1;
+    typedef util::value_iter<Iter2_t> type2;
+    static_assert (std::is_same< type1, type2 >::value,
+                    "Incompatible iterators\n");
+
+    v_output.clear();
+    if (v_input.size() == 0)
+    {
+        return range2_t(range_output.first, range_output.first);
+    };
+    if (v_input.size() == 1)
+    {
+        return move_forward(range_output, v_input[0]);
+    };
+    bool sw = false;
+    uint32_t nrange = v_input.size();
+
+    while (nrange > 1)
+    {
+        if (sw)
+        {
+            merge_level4(range_input, v_output, v_input, comp);
+            sw = false;
+            nrange = v_input.size();
+        }
+        else
+        {
+            merge_level4(range_output, v_input, v_output, comp);
+            sw = true;
+            nrange = v_output.size();
+        };
+    };
+    return (sw) ? v_output[0] : move_forward(range_output, v_input[0]);
+};
+COMMENT:
+/// @param range_input : range including all the ranges of v_input
+/// @param ange_output : range including all the elements of v_output
+/// @param v_input : vector of ranges to merge
+/// @param v_output : vector of ranges obtained
+/// @param comp : comparison object
+/// @return range with all the elements moved
+
+
+
+CODE:
+static int generate_file(const std::string & filename, size_t NElem)
+{   //------------------------------- begin ----------------------------------
+    std::ofstream ofile;
+    ofile.open(filename, std::ios_base::out | std::ios_base::binary |
+                         std::ios_base::trunc);
+    if (ofile.bad())
+    {
+        throw std::ios_base::failure("could not open file \n");
+    };
+    std::mt19937_64 my_rand(0);
+
+    for (size_t i = 0; i < NElem; ++i)
+    {
+        uint64_t Aux = my_rand();
+        ofile.write((char *) &Aux, 8);
+    }
+    ofile.close();
+    return 0;
+};
+COMMENT:
+/// @brief Generate a binary file filed with random numbers of 64 bits
+/// @param [in] filename : name of the file
+/// @param [in] NElem : number of 64 bits numbers to insert in the file
+/// @exception
+/// @return
+/// @remarks
+
+
+
+CODE:
+static int fill_vector_uint64(const std::string & filename,
+                              std::vector<uint64_t> & V, size_t NElem)
+{   //----------------------- begin ------------------------------------------
+    std::ifstream input(filename, std::ios_base::in | std::ios_base::binary);
+    if (input.fail())
+    {
+        throw std::ios_base::failure("could not open file \n");
+    };
+    //------------------------------------------------------------------------
+    // Calculate the lenght of the file and the number of elements inside
+    //------------------------------------------------------------------------
+    input.seekg(0, std::ios_base::end);
+    size_t length = input.tellg();
+    size_t uCount = length / 8;
+    if (uCount < NElem)
+    {
+        throw std::ios_base::failure("incorrect lenght of the file\n");
+    };
+    V.clear();
+    V.reserve(NElem);
+
+    uint64_t Aux = 0;
+    input.seekg(0, std::ios_base::beg);
+    for (size_t i = 0; i < NElem; ++i)
+    {
+        input.read(reinterpret_cast<char *>(&Aux), 8);
+        V.push_back(Aux);
+    };
+    input.close();
+    return 0;
+};
+COMMENT:
+/// @brief : fill a vector of uint64_t elements from a file
+/// @param [in] filename : name of the file
+/// @param [in] V : vector to fill
+/// @param [in] NElem : number of elements for to read from the file
+/// @exception
+/// @return
+/// @remarks
+
+
+
+CODE:
+static int write_file_uint64 (const std::vector<uint64_t> & V,
+                              const std::string & filename)
+{   //--------------------------------- begin --------------------------------
+    std::ofstream ofile;
+    ofile.open(filename,
+                    std::ios_base::out | std::ios_base::binary
+                                    | std::ios_base::trunc);
+    if (ofile.bad())
+    {
+        throw std::ios_base::failure("could not open file \n");
+    };
+    for (size_t i = 0; i < V.size(); ++i)
+    {
+        ofile.write((char *) &(V[i]), 8);
+    }
+    ofile.close();
+    return 0;
+};
+COMMENT:
+/// @brief Write a file with the contnt of a vector of Uint64_t elements
+/// @param [in] V : vector from read the numbersl
+/// @param [in] filename : name of the file
+/// @exception
+/// @return
+/// @remarks
+
+
+
+CODE:
+static int fill_vector_string (const std::string & filename,
+                               std::vector<std::string> & V, size_t NElem)
+{   //----------------------- begin ------------------------------------------
+    std::ifstream input(filename, std::ios_base::in | std::ios_base::binary);
+    if (input.fail())
+    {
+        throw std::ios_base::failure("could not open file \n");
+    };
+    //------------------------------------------------------------------------
+    // Calculate the lenght of the file and the number of elements inside
+    //------------------------------------------------------------------------
+    input.seekg(0, std::ios_base::end);
+    V.clear();
+    V.reserve(NElem);
+
+    std::string inval;
+    input.seekg(0, std::ios_base::beg);
+
+    for (size_t i = 0; i < NElem; ++i)
+    {
+        if (!input.eof())
+        {
+            input >> inval;
+            V.push_back(inval);
+            inval.clear();
+        }
+        else
+        {
+            throw std::ios_base::failure("Insuficient lenght of the file\n");
+        };
+    };
+    input.close();
+    return 0;
+};
+COMMENT:
+/// @brief fill a vector of strings from a file
+/// @param [in] filename : name of the file from read the strings
+/// @param [in] V : vector where store the strings
+/// @param [in] NElem : Number of strings for to read from the file
+/// @exception
+/// @return
+/// @remarks
+
+
+
+CODE:
+static int write_file_string (const std::vector<std::string> & V,
+                             const std::string & filename)
+{   //--------------------------------- begin --------------------------------
+    std::ofstream ofile;
+    ofile.open(filename,
+                    std::ios_base::out | std::ios_base::binary
+                                    | std::ios_base::trunc);
+    if (ofile.bad())
+    {
+        throw std::ios_base::failure("could not open file \n");
+    };
+    for (size_t i = 0; i < V.size(); ++i)
+    {
+        ofile.write((char *) &(V[i][0]), V[i].size());
+        ofile.put(0x0);
+    }
+    ofile.close();
+    return 0;
+};
+COMMENT:
+/// @brief : write a file with the strings of a vector
+/// @param [in] V : vector from read the sttrings
+/// @param [in] filename : file where store the strings
+/// @exception
+/// @return
+/// @remarks
+
+
+
+CODE:
+inline Iter_t is_stable_sorted_forward (Iter_t first, Iter_t last,
+                                        Compare comp = Compare())
+{
+#ifdef __BS_DEBUG
+    assert ( (last- first) >= 0);
+#endif
+    if ((last - first) < 2) return first;
+    Iter_t it2 = first + 1;
+    for (Iter_t it1 = first; it2 != last and not comp(*it2, *it1); it1 = it2++);
+    return it2;
+}
+COMMENT:
+/// @brief examine the elements in the range first, last if they are stable
+///        sorted, and return an iterator to the first element not sorted
+/// @param first : iterator to the first element in the range
+/// @param last : ierator after the last element of the range
+/// @param comp : object for to compare two elements
+/// @return iterator to the first element not stable sorted. The number of
+///         elements sorted is the iterator returned minus first
+
+
+
+CODE:
+inline Iter_t is_reverse_stable_sorted_forward(Iter_t first, Iter_t last,
+                                               Compare comp = Compare())
+{
+#ifdef __BS_DEBUG
+    assert ( (last- first) >= 0);
+#endif
+    if ((last - first) < 2) return first;
+    Iter_t it2 = first + 1;
+    for (Iter_t it1 = first; it2 != last and comp(*it2, *it1); it1 = it2++);
+    return it2;
+};
+COMMENT:
+/// @brief examine the elements in the range first, last if they are reverse
+///        stable sorted, and return an iterator to the first element not
+///        reverse stable sorted
+/// @param first : iterator to the first element in the range
+/// @param last : ierator after the last element of the range
+/// @param comp : object for to compare two elements
+/// @return iterator to the first element not  reverse stable sorted. The number
+///         of elements sorted is the iterator returned minus first
+
+
+
+CODE:
+size_t number_stable_sorted_forward (Iter_t first, Iter_t last,
+		                             size_t min_process,
+                                     Compare comp = Compare())
+{
+#ifdef __BS_DEBUG
+    assert ( (last- first) >= 0);
+#endif
+    if ((last - first) < 2) return 0;
+
+    // sorted elements
+    Iter_t it2 = first + 1;
+    for (Iter_t it1 = first; it2 != last and not comp(*it2, *it1); it1 = it2++);
+    size_t nsorted = size_t ( it2 - first);
+    if ( nsorted != 1)
+    	return (nsorted >= min_process) ? nsorted: 0;
+
+    // reverse sorted elements
+    it2 = first + 1;
+    for (Iter_t it1 = first; it2 != last and comp(*it2, *it1); it1 = it2++);
+    nsorted = size_t ( it2 - first);
+
+    if ( nsorted < min_process) return 0 ;
+    util::reverse ( first , it2);
+    return nsorted;
+};
+COMMENT:
+/// @brief examine the elements in the range first, last if they are stable
+///        sorted, and return the number of elements sorted
+/// @param first : iterator to the first element in the range
+/// @param last : ierator after the last element of the range
+/// @param comp : object for to compare two elements
+/// @param min_process : minimal number of elements to be consideer
+/// @return number of element sorted. I f the number is lower than min_process
+///         return 0
+
+
+
+CODE:
+inline Iter_t is_stable_sorted_backward(Iter_t first, Iter_t last,
+                                        Compare comp = Compare())
+{
+#ifdef __BS_DEBUG
+    assert ( (last- first) >= 0);
+#endif
+    if ((last - first) < 2) return first;
+    Iter_t itaux = last - 1;
+    while (itaux != first and not comp(*itaux, *(itaux - 1))) {--itaux; };
+    return itaux;
+}
+COMMENT:
+/// @brief examine the elements in the range first, last beginning at end, and
+///        if they are stablesorted, and return an iterator to the last element
+///        sorted
+/// @param first : iterator to the first element in the range
+/// @param last : ierator after the last element of the range
+/// @param comp : object for to compare two elements
+/// @return iterator to the last element stable sorted. The number of
+///         elements sorted is the last minus the iterator returned
+
+
+
+CODE:
+inline Iter_t is_reverse_stable_sorted_backward (Iter_t first, Iter_t last,
+                                                 Compare comp = Compare())
+{
+#ifdef __BS_DEBUG
+    assert ( (last- first) >= 0);
+#endif
+    if ((last - first) < 2) return first;
+    Iter_t itaux = last - 1;
+    for (; itaux != first and comp(*itaux, *(itaux - 1)); --itaux);
+    return itaux;
+}
+COMMENT:
+/// @brief examine the elements in the range first, last beginning at end, and
+///        if they are stablesorted, and return an iterator to the last element
+///        sorted
+/// @param first : iterator to the first element in the range
+/// @param last : ierator after the last element of the range
+/// @param comp : object for to compare two elements
+/// @return iterator to the last element stable sorted. The number of
+///         elements sorted is the last minus the iterator returned
+
+
+
+CODE:
+size_t number_stable_sorted_backward (Iter_t first, Iter_t last,
+		                             size_t min_process,
+                                     Compare comp = Compare())
+{
+#ifdef __BS_DEBUG
+    assert ( (last- first) >= 0);
+#endif
+    if ((last - first) < 2) return 0;
+    Iter_t itaux = last - 1;
+    while (itaux != first and not comp(*itaux, *(itaux - 1))) {--itaux; };
+    size_t nsorted = size_t ( last - itaux);
+    if ( nsorted != 1)
+    	return ( nsorted >= min_process)?nsorted: 0 ;
+
+    itaux = last - 1;
+    for (; itaux != first and comp(*itaux, *(itaux - 1)); --itaux);
+    nsorted = size_t ( last - itaux);
+    if ( nsorted < min_process) return 0 ;
+    util::reverse ( itaux, last );
+    return nsorted;
+}
+COMMENT:
+/// @brief examine the elements in the range first, last if they are stable
+///        sorted, and return the number of elements sorted
+/// @param first : iterator to the first element in the range
+/// @param last : ierator after the last element of the range
+/// @param comp : object for to compare two elements
+/// @param min_process : minimal number of elements to be consideer
+/// @return number of element sorted. I f the number is lower than min_process
+///         return 0
+
+
+
+CODE:
+inline void internal_sort (const range<Iter1_t> &rng1,
+		                   const range<Iter2_t> &rng2,
+                           Compare comp, uint32_t level, bool even = true)
+{
+    //-----------------------------------------------------------------------
+    //                  metaprogram
+    //-----------------------------------------------------------------------
+    typedef value_iter<Iter1_t> value_t;
+    typedef value_iter<Iter2_t> value2_t;
+    static_assert (std::is_same< value_t, value2_t>::value,
+                    "Incompatible iterators\n");
+
+    //-----------------------------------------------------------------------
+    //                  program
+    //-----------------------------------------------------------------------
+#ifdef __BS_DEBUG
+    assert (rng1.size ( ) == rng2.size ( ) );
+#endif
+    size_t nelem = (rng1.size() + 1) >> 1;
+
+    range<Iter1_t> rng1_left(rng1.first, rng1.first + nelem), 
+                   rng1_right(rng1.first + nelem, rng1.last);
+
+    range<Iter2_t> rng2_left(rng2.first, rng2.first + nelem), 
+                   rng2_right(rng2.first + nelem, rng2.last);
+
+    if (nelem <= 32 and (level & 1) == even)
+    {
+        insert_sort(rng1_left.first, rng1_left.last, comp);
+        insert_sort(rng1_right.first, rng1_right.last, comp);
+    }
+    else
+    {
+        internal_sort(rng2_left, rng1_left, comp, level + 1, even);
+        internal_sort(rng2_right, rng1_right, comp, level + 1, even);
+    };
+    merge(rng2, rng1_left, rng1_right, comp);
+};
+COMMENT:
+/// @brief this function divide r_input in two parts, sort it,and merge moving
+///        the elements to range_buf
+/// @param range_input : range with the elements to sort
+/// @param range_buffer : range with the elements sorted
+/// @param comp : object for to compare two elements
+/// @param level : when is 1, sort with the insertionsort algorithm
+///                if not make a recursive call splitting the ranges
+
+
+
+CODE:
+static void range_sort_data (const range<Iter1_t> & rng_data,
+                             const range<Iter2_t> & rng_aux, Compare comp)
+{
+    //-----------------------------------------------------------------------
+    //                  metaprogram
+    //-----------------------------------------------------------------------
+    typedef value_iter<Iter1_t> value_t;
+    typedef value_iter<Iter2_t> value2_t;
+    static_assert (std::is_same< value_t, value2_t>::value,
+                    "Incompatible iterators\n");
+
+    //------------------------------------------------------------------------
+    //                    program
+    //------------------------------------------------------------------------
+#ifdef __BS_DEBUG
+    assert ( rng_data.size() == rng_aux.size());
+#endif
+    // minimal number of element before to jump to insertionsort
+    const uint32_t sort_min = 32;
+    if (rng_data.size() <= sort_min)
+    {
+        insert_sort(rng_data.first, rng_data.last, comp);
+        return;
+    };
+
+    internal_sort(rng_aux, rng_data, comp, 0, true);
+};
+COMMENT:
+/// @brief this sort elements using the range_sort function and receiving a
+///        buffer of initialized memory
+/// @param rng_data : range with the elements to sort
+/// @param rng_aux : range of at least the same memory than rng_data used as
+///                  auxiliary memory in the sorting
+/// @param comp : object for to compare two elements
+
+
+
+CODE:
+static void range_sort_buffer(const range<Iter1_t> & rng_data,
+                              const range<Iter2_t> & rng_aux, Compare comp)
+{
+    //-----------------------------------------------------------------------
+    //                  metaprogram
+    //-----------------------------------------------------------------------
+    typedef value_iter<Iter1_t> value_t;
+    typedef value_iter<Iter2_t> value2_t;
+    static_assert (std::is_same< value_t, value2_t>::value,
+                    "Incompatible iterators\n");
+
+    //------------------------------------------------------------------------
+    //                    program
+    //------------------------------------------------------------------------
+#ifdef __BS_DEBUG
+    assert ( rng_data.size() == rng_aux.size());
+#endif
+    // minimal number of element before to jump to insertionsort
+    const uint32_t sort_min = 32;
+    if (rng_data.size() <= sort_min)
+    {
+        insert_sort(rng_data.first, rng_data.last, comp);
+        move_forward(rng_aux, rng_data);
+        return;
+    };
+
+    internal_sort(rng_data, rng_aux, comp, 0, false);
+};
+COMMENT:
+/// @brief this sort elements using the range_sort function and receiving a
+///        buffer of initialized memory
+/// @param rng_data : range with the elements to sort
+/// @param rng_aux : range of at least the same memory than rng_data used as
+///                  auxiliary memory in the sorting
+/// @param comp : object for to compare two elements
+
+
+
+CODE:
+inline Iter_t mid3 (Iter_t iter_1, Iter_t iter_2, Iter_t iter_3, Compare comp)
+{
+	if (comp (*iter_2, *iter_1)) std::swap ( *iter_2, *iter_1);
+	if (comp (*iter_3, *iter_2))
+	{	std::swap ( *iter_3, *iter_2);
+		if (comp (*iter_2, *iter_1)) std::swap ( *iter_2, *iter_1);
+	};
+	return iter_2;
+};
+COMMENT:
+/// @brief : return the iterator to the mid value of the three values passsed
+///          as parameters
+/// @param iter_1 : iterator to the first value
+/// @param iter_2 : iterator to the second value
+/// @param iter_3 : iterator to the third value
+/// @param comp : object for to compare two values
+/// @return iterator to mid value
+
+
+
+CODE:
+inline void pivot3 (Iter_t first, Iter_t last, Compare comp)
+{
+    auto N2 = (last - first) >> 1;
+    Iter_t it_val = mid3 (first + 1, first + N2, last - 1, comp);
+    std::swap (*first, *it_val);
+};
+COMMENT:
+/// @brief : receive a range between first and last, calcule the mid iterator
+///          with the first, the previous to the last, and the central
+///          position. With this mid iterator swap with the first position
+/// @param first : iterator to the first element
+/// @param last : iterator to the last element
+/// @param comp : object for to compare two elements
+
+
+
+CODE:
+inline Iter_t mid9 (Iter_t iter_1, Iter_t iter_2, Iter_t iter_3, Iter_t iter_4,
+                    Iter_t iter_5, Iter_t iter_6, Iter_t iter_7, Iter_t iter_8,
+                    Iter_t iter_9, Compare comp)
+{
+    return mid3 (mid3 (iter_1, iter_2, iter_3, comp),
+                 mid3 (iter_4, iter_5, iter_6, comp),
+                 mid3 (iter_7, iter_8, iter_9, comp), comp);
+};
+COMMENT:
+/// @param iter_1 : iterator to the first value
+/// @param iter_2 : iterator to the second value
+/// @param iter_3 : iterator to the third value
+/// @param iter_4 : iterator to the fourth value
+/// @param iter_5 : iterator to the fifth value
+/// @param iter_6 : iterator to the sixth value
+/// @param iter_7 : iterator to the seventh value
+/// @param iter_8 : iterator to the eighth value
+/// @param iter_9 : iterator to the ninth value
+/// @return iterator to the mid value
+
+
+
+CODE:
+inline void pivot9 (Iter_t first, Iter_t last, Compare comp)
+{
+    size_t cupo = (last - first) >> 3;
+    Iter_t itaux = mid9 (first + 1, first + cupo, first + 2 * cupo,
+                         first + 3 * cupo, first + 4 * cupo, first + 5 * cupo,
+                         first + 6 * cupo, first + 7 * cupo, last - 1, comp);
+    std::swap (*first, *itaux);
+};
+COMMENT:
+/// @brief : receive a range between first and last, obtain 9 values between
+///          the elements  including the first and the previous to the last.
+///          Obtain the iterator to the mid value and swap with the first
+///          position
+/// @param first : iterator to the first element
+/// @param last : iterator to the last element
+/// @param comp : object for to compare two elements
+
+
+
+CODE:
+    range(void) { };
+COMMENT:
+/// @struct range
+/// @brief this represent a range between two iterators
+/// @remarks
+
+
+
+CODE:
+inline range<Iter_t> concat(const range<Iter_t> &it1, const range<Iter_t> &it2)
+{
+    return range<Iter_t>(it1.first, it2.last);
+}
+COMMENT:
+/// @brief concatenate two contiguous ranges
+/// @param it1 : first range
+/// @param it2 : second range
+/// @return  range resulting of the concatenation
+
+
+
+CODE:
+inline range<Iter2_t> move_forward(const range<Iter2_t> &dest,
+                                   const range<Iter1_t> &src)
+{
+    assert(dest.size() >= src.size());
+    Iter2_t it_aux = util::move_forward(dest.first, src.first, src.last);
+    return range<Iter2_t>(dest.first, it_aux);
+};
+COMMENT:
+/// @brief Move initialized objets from the range src to dest
+/// @param dest : range where move the objects
+/// @param src : range from where move the objects
+/// @return range with the objects moved and the size adjusted
+
+
+
+CODE:
+inline range<Iter2_t> move_backward(const range<Iter2_t> &dest,
+                                    const range<Iter1_t> &src)
+{
+    assert(dest.size() >= src.size());
+    Iter2_t it_aux = util::move_backward(dest.first + src.size(), src.first,
+                    src.last);
+    return range<Iter2_t>(dest.first, dest.src.size());
+};
+COMMENT:
+/// @brief Move initialized objets from the range src to dest
+/// @param dest : range where move the objects
+/// @param src : range from where move the objects
+/// @return range with the objects moved and the size adjusted
+
+
+
+CODE:
+inline range<Value_t*> move_construct(const range<Value_t*> &dest,
+                                      const range<Iter_t> &src)
+{
+    Value_t *ptr_aux = util::move_construct(dest.first, src.first, src.last);
+    return range<Value_t*>(dest.first, ptr_aux);
+};
+COMMENT:
+/// @brief Move uninitialized objets from the range src creating them in  dest
+/// @param dest : range where move and create the objects
+/// @param src : range from where move the objects
+/// @return range with the objects moved and the size adjusted
+
+
+
+CODE:
+inline void destroy(range<Iter_t> rng)
+{
+    util::destroy(rng.first, rng.last);
+};
+COMMENT:
+/// @brief destroy a range of objects
+/// @param rng : range to destroy
+
+
+
+CODE:
+inline range<Iter_t> initialize(const range<Iter_t> &rng, Value_t &val)
+{
+    util::initialize(rng.first, rng.last, val);
+    return rng;
+};
+COMMENT:
+/// @brief initialize a range of objects with the object val moving across them
+/// @param rng : range of elements not initialized
+/// @param val : object used for the initialization
+/// @return range initialized
+
+
+
+CODE:
+inline bool is_mergeable(const range<Iter1_t> &src1, const range<Iter2_t> &src2,
+                         Compare comp)
+{
+    //------------------------------------------------------------------------
+    //                  Metaprogramming
+    //------------------------------------------------------------------------
+    typedef util::value_iter<Iter1_t> type1;
+    typedef util::value_iter<Iter2_t> type2;
+    static_assert (std::is_same< type1, type2 >::value,
+                    "Incompatible iterators\n");
+    //------------------------------------------------------------------------
+    //                 Code
+    //------------------------------------------------------------------------
+    return comp(*(src2.front()), *(src1.back()));
+};
+COMMENT:
+/// @brief : indicate if two ranges have a possible merge
+/// @param src1 : first range
+/// @param src2 : second range
+/// @param comp : object for to compare elements
+/// @return true : they can be merged
+///         false : they can't be merged
+
+
+
+CODE:
+inline bool is_mergeable_stable(const range<Iter1_t> &src1,
+                                const range<Iter2_t> &src2, Compare comp)
+{
+    //------------------------------------------------------------------------
+    //                  Metaprogramming
+    //------------------------------------------------------------------------
+    typedef util::value_iter<Iter1_t> type1;
+    typedef util::value_iter<Iter2_t> type2;
+    static_assert (std::is_same< type1, type2 >::value,
+                    "Incompatible iterators\n");
+    //------------------------------------------------------------------------
+    //                 Code
+    //------------------------------------------------------------------------
+    return not comp(*(src1.back()), *(src2.front()));
+};
+COMMENT:
+/// @brief : indicate if two ranges have a possible merge
+/// @param src1 : first range
+/// @param src2 : second range
+/// @param comp : object for to compare elements
+/// @return true : they can be merged
+///         false : they can't be merged
+
+
+
+CODE:
+inline range<Iter3_t> merge(const range<Iter3_t> &dest,
+                            const range<Iter1_t> &src1,
+                            const range<Iter2_t> &src2, Compare comp)
+{
+    Iter3_t it_aux = util::merge(src1.first, src1.last, src2.first, src2.last,
+                    dest.first, comp);
+    return range<Iter3_t>(dest.first, it_aux);
+};
+COMMENT:
+/// @brief Merge two contiguous ranges src1 and src2, and put the result in
+///        the range dest, returning the range merged
+/// @param dest : range where locate the lements merged. the size of dest
+///               must be  greater or equal than the sum of the sizes of
+///               src1 and src2
+/// @param src1 : first range to merge
+/// @param src2 : second range to merge
+/// @param comp : comparison object
+/// @return range with the elements merged and the size adjusted
+
+
+
+CODE:
+inline range<Value_t *> merge_construct(const range<Value_t *> &dest,
+                                        const range<Iter1_t> &src1,
+                                        const range<Iter2_t> &src2,
+                                        Compare comp)
+{
+    Value_t * ptr_aux = util::merge_construct(src1.first, src1.last, src2.first,
+                    src2.last, dest.first, comp);
+    return range<Value_t*>(dest.first, ptr_aux);
+};
+COMMENT:
+/// @brief Merge two contiguous uninitialized ranges src1 and src2, and create
+///        and move the result in the uninitialized range dest, returning the
+///        range merged
+/// @param dest : range where locate the elements merged. the size of dest
+///               must be  greater or equal than the sum of the sizes of
+///               src1 and src2. Initially is uninitialize memory
+/// @param src1 : first range to merge
+/// @param src2 : second range to merge
+/// @param comp : comparison object
+/// @return range with the elements merged and the size adjusted
+
+
+
+CODE:
+inline range<Iter2_t> merge_half(const range<Iter2_t> &dest,
+                                 const range<Iter1_t> &src1,
+                                 const range<Iter2_t> &src2, Compare comp)
+{
+    Iter2_t it_aux = util::merge_half(src1.first, src1.last, src2.first,
+                    src2.last, dest.first, comp);
+    return range<Iter2_t>(dest.first, it_aux);
+};
+COMMENT:
+/// @brief : Merge two initialized buffers. The first buffer is in a separate
+///          memory
+/// @param dest : range where finish the two buffers merged
+/// @param src1 : first range to merge in a separate memory
+/// @param src2 : second range to merge, in the final part of the
+///               range where deposit the final results
+/// @param comp : object for compare two elements of the type pointed
+///               by the Iter1_t and Iter2_t
+/// @return : range with the two buffers merged
+
+
+
+CODE:
+inline bool merge_uncontiguous(const range<Iter1_t> &src1,
+                               const range<Iter2_t> &src2,
+                               const range<Iter3_t> &aux, Compare comp)
+{
+    return util::merge_uncontiguous(src1.first, src1.last, src2.first,
+                    src2.last, aux.first, comp);
+};
+COMMENT:
+/// @brief : merge two non contiguous ranges src1, src2, using the range
+///          aux as auxiliary memory. The results are in the original ranges
+/// @param src1 : first range to merge
+/// @param src2 : second range to merge
+/// @param aux : auxiliary range used in the merge
+/// @param comp : object for to compare elements
+/// @return true : not changes done, false : changes in the buffers
+
+
+
+CODE:
+inline range<Iter1_t> merge_contiguous(const range<Iter1_t> &src1,
+                                       const range<Iter1_t> &src2,
+                                       const range<Iter2_t> &buf, Compare comp)
+{
+    util::merge_contiguous(src1.first, src1.last, src2.last, buf.first, comp);
+    return concat(src1, src2);
+};
+COMMENT:
+/// @brief : merge two contiguous ranges ( src1, src2) using buf as
+///          auxiliary memory. The results are in the same ranges
+/// @param src1 : first range to merge
+/// @param src1 : second range to merge
+/// @param buf : auxiliary memory used in the merge
+/// @param comp : object for to compare elements
+/// @return true : not changes done,   false : changes in the buffers
+
+
+
+CODE:
+static void merge_flow(range<Iter1_t> rng1, range<Iter2_t> rbuf,
+                       range<Iter1_t> rng2, Compare cmp)
+{
+    //-------------------------------------------------------------------------
+    //                       Metaprogramming
+    //-------------------------------------------------------------------------
+    typedef util::value_iter<Iter1_t> type1;
+    typedef util::value_iter<Iter2_t> type2;
+    static_assert (std::is_same< type1, type2 >::value,
+                    "Incompatible iterators\n");
+
+    //-------------------------------------------------------------------------
+    //                       Code
+    //-------------------------------------------------------------------------
+    range<Iter2_t> rbx(rbuf);
+    range<Iter1_t> rx1(rng1), rx2(rng2);
+    assert(rbx.size() == rx1.size() and rx1.size() == rx2.size());
+    while (rx1.first != rx1.last)
+    {
+        *(rx1.first++) = (cmp(*rbx.first, *rx2.first)) ?
+                                                    std::move(*(rbx.first++)):
+                                                    std::move(*(rx2.first++));
+    };
+    if (rx2.first == rx2.last) return;
+    if (rbx.first == rbx.last) move_forward(rbuf, rng2);
+    else                       merge_half(rbuf, rx2, rbx, cmp);
+};
+COMMENT:
+/// @param rng1 : range where locate the first elements of the merge
+/// @param rbuf : range which provide the first elements, and where store
+///               the last results of the merge
+/// @param rng2 : range which provide the last elements to merge
+/// @param comp : object for to compare elements
+/// @return true : not changes done,  false : changes in the buffers
+
+
+
+CODE:
+void rearrange(Iter_data global_first, Iter_index itx_first,
+               Iter_index itx_last, Filter_pos pos)
+{
+    //-----------------------------------------------------------------------
+    //                    Metaprogramming
+    //-----------------------------------------------------------------------
+    typedef util::value_iter<Iter_data>     value_data;
+    typedef util::value_iter<Iter_index>    value_index;
+
+    //-------------------------------------------------------------------------
+    //                     Code
+    //-------------------------------------------------------------------------	
+    assert((itx_last - itx_first) >= 0);
+    size_t pos_dest, pos_src, pos_ini;
+    size_t nelem = size_t(itx_last - itx_first);
+    Iter_data data = global_first;
+    Iter_index index = itx_first;
+
+    pos_ini = 0;
+    while (pos_ini < nelem)
+    {
+        while (pos_ini < nelem and pos(index[pos_ini]) == pos_ini)
+            ++pos_ini;
+        if (pos_ini == nelem) return;
+        pos_dest = pos_src = pos_ini;
+        value_data aux = std::move(data[pos_ini]);
+        value_index itx_src = std::move(index[pos_ini]);
+
+        while ((pos_src = pos(itx_src)) != pos_ini)
+        {
+            data[pos_dest] = std::move(data[pos_src]);
+            std::swap(itx_src, index[pos_src]);
+            pos_dest = pos_src;
+        };
+
+        data[pos_dest] = std::move(aux);
+        index[pos_ini] = std::move(itx_src);
+        ++pos_ini;
+    };
+};
+COMMENT:
+/// @brief This function transform a logical sort of the elements in the index  
+///        of iterators in a physical sort. 
+/// @param global_first : iterator to the first element of the data
+/// @param [in] index : vector of the iterators
+
+
+
+CODE:
+static void create_index(Iter_t first, Iter_t last, std::vector<Iter_t> &index)
+{
+    auto nelem = last - first;
+    assert(nelem >= 0);
+    index.clear();
+    index.reserve(nelem);
+    for (; first != last; ++first) index.push_back(first);
+};
+COMMENT:
+/// @brief From a vector of objects, create a vector of iterators to
+///        the objects
+/// @param first : iterator to the first element of the range
+/// @param last : iterator to the element after the last of the range
+/// @param index : vector where store the iterators
+
+
+
+CODE:
+static void sort_index(Iter_t global_first, std::vector<Iter_t> &index)
+{
+    typedef util::value_iter<Iter_t> value_t;
+
+    size_t pos_dest = 0;
+    size_t pos_src = 0;
+    size_t pos_in_vector = 0;
+    size_t nelem = index.size();
+    Iter_t it_dest, it_src;
+
+    while (pos_in_vector < nelem)
+    {
+        while (pos_in_vector < nelem and
+               (size_t(index[pos_in_vector] - global_first)) == pos_in_vector)
+        {
+            ++pos_in_vector;
+        };
+
+        if (pos_in_vector == nelem) return;
+        pos_dest = pos_src = pos_in_vector;
+        it_dest = global_first + pos_dest;
+        value_t Aux = std::move(*it_dest);
+
+        while ((pos_src = (size_t(index[pos_dest] - global_first)))
+               != pos_in_vector)
+        {
+            index[pos_dest] = it_dest;
+            it_src = global_first + pos_src;
+            *it_dest = std::move(*it_src);
+            it_dest = it_src;
+            pos_dest = pos_src;
+        };
+
+        *it_dest = std::move(Aux);
+        index[pos_dest] = it_dest;
+        ++pos_in_vector;
+    };
+};
+COMMENT:
+/// @brief This function transform a logical sort of the elements in the index
+///        in a physical sort
+/// @param global_first : iterator to the first element of the data
+/// @param [in] index : vector of the iterators
+
+
+
+CODE:
+inline T atomic_read(std::atomic<T> &at_var)
+{
+    return std::atomic_load_explicit < T > (&at_var, std::memory_order_acquire);
+};
+COMMENT:
+/// @brief make the atomic read of an atomic variable, using a memory model
+/// @param at_var : atomic variable to read
+/// @return value obtained
+
+
+
+CODE:
+inline T atomic_add(std::atomic<T> &at_var, T2 num)
+{
+    static_assert (std::is_integral< T2 >::value, "Bad parameter");
+    return std::atomic_fetch_add_explicit <T> 
+                               (&at_var, (T) num, std::memory_order_acq_rel);
+};
+COMMENT:
+/// @brief Add a number to an atomic variable, using a memory model
+/// @param at_var : variable to add
+/// @param num : value to add to at_var
+/// @return result of the operation
+
+
+
+CODE:
+inline T atomic_sub(std::atomic<T> &at_var, T2 num)
+{
+    static_assert (std::is_integral< T2 >::value, "Bad parameter");
+    return std::atomic_fetch_sub_explicit <T> 
+                                (&at_var, (T) num, std::memory_order_acq_rel);
+};
+COMMENT:
+/// @brief Atomic subtract of an atomic variable using memory model
+/// @param at_var : Varibale to subtract
+/// @param num : value to sub to at_var
+/// @return result of the operation
+
+
+
+CODE:
+inline void atomic_write(std::atomic<T> &at_var, T2 num)
+{
+    static_assert (std::is_integral< T2 >::value, "Bad parameter");
+    std::atomic_store_explicit <T> 
+                                (&at_var, (T) num, std::memory_order_release);
+};
+COMMENT:
+/// @brief Write a value in an atomic variable using memory model
+/// @param at_var : varible to write
+/// @param num : value to write in at_var
+
+
+
+CODE:
+static void insert_sorted(Iter1_t first, Iter1_t mid, Iter1_t last,
+                          Compare comp, Iter2_t it_aux)
+{
+    //------------------------------------------------------------------------
+    //                 metaprogram
+    //------------------------------------------------------------------------
+    typedef value_iter<Iter1_t> value_t;
+    typedef value_iter<Iter2_t> value2_t;
+    static_assert (std::is_same< value_t, value2_t>::value,
+                    "Incompatible iterators\n");
+
+    //--------------------------------------------------------------------
+    //                   program
+    //--------------------------------------------------------------------
+    if (mid == last) return;
+    if (first == mid) return;
+
+    //------------------------------------------------------------------------
+    // creation of the vector of elements to insert and their position in the
+    // sorted part
+    // the data are inserted in it_aux
+    //-----------------------------------------------------------------------
+    move_forward(it_aux, mid, last);
+
+    // search of the iterators where insert the new elements
+    size_t ndata = last - mid;
+    Iter1_t mv_first = mid, mv_last = mid;
+
+    for (size_t i = ndata; i > 0; --i)
+    {
+        mv_last = mv_first;
+        mv_first = std::upper_bound(first, mv_last, it_aux[i - 1], comp);
+        Iter1_t it1 = here::move_backward(mv_last + i, mv_first, mv_last);
+        *(it1 - 1) = std::move(it_aux[i - 1]);
+    };
+};
+COMMENT:
+/// @brief : Insertion sort of elements sorted
+/// @param first: iterator to the first element of the range
+/// @param mid : last pointer of the sorted data, and first pointer to the
+///               elements to insert
+/// @param last : iterator to the next element of the last in the range
+/// @param comp :
+/// @comments : the two ranges are sorted and in it_aux there is spave for 
+///             to store temporally the elements to insert
+
+
+
+CODE:
+    void operator()(Args && ... args)
+    {
+        T(std::forward<Args> (args) ...);
+    };
+COMMENT:
+/// @class constructor
+/// @brief create a functor with the constructor of a class for to be invoked
+///        from a bind or a lambda
+/// @remarks
+
+
+
+CODE:
+::pop_copy_front(iter_t it_dest, size_t num)
+{
+    static_assert ( std::is_same <value_iter<iter_t>, Value_t>::value,
+                    "Incompatible iterator");
+    if (num == 0) return;
+#ifdef __BS_DEBUG
+    assert ( num <= nelem);
+#endif
+    nelem -= num;
+    size_t pos = first_pos;
+    first_pos = (first_pos + num) & MASK;
+    for (size_t i = 0; i < num; ++i)
+    {
+        *(it_dest++) = ptr[pos++ & MASK];
+    };
+    first_pos &= MASK;
+};
+COMMENT:
+/// @brief copy and delete num elements from the front of the buffer
+/// @param it_dest : iterator to the first position where copy the elements
+/// @param num : number of elements to copy
+
+
+
+CODE:
+:: pop_move_front(iter_t it_dest, size_t num)
+{
+    static_assert ( std::is_same <value_iter<iter_t>, Value_t>::value,
+                    "Incompatible iterator");
+    if (num == 0) return;
+#ifdef __BS_DEBUG
+    assert ( num <= nelem);
+#endif
+    nelem -= num;
+    size_t pos = first_pos;
+    first_pos = (first_pos + num) & MASK;
+    for (size_t i = 0; i < num; ++i)
+    {
+        *(it_dest++) = std::move(ptr[pos++ & MASK]);
+    };
+    first_pos &= MASK;
+};
+COMMENT:
+/// @brief move num elements from the front of the buffer to the place
+/// @param it_dest : iterator to the first position where move the elements
+/// @param num : number of elements to move
+
+
+
+CODE:
+::pop_copy_back(iter_t it_dest, size_t num)
+{
+    static_assert ( std::is_same <value_iter<iter_t>, Value_t>::value,
+                    "Incompatible iterator");
+    if (num == 0) return;
+#ifdef __BS_DEBUG
+    assert ( num <= nelem);
+#endif
+    nelem -= num;
+    size_t pos = (first_pos + nelem) & MASK;
+    for (size_t i = 0; i < num; ++i)
+    {
+        *(it_dest++) = ptr[pos++ & MASK];
+    };
+};
+COMMENT:
+/// @brief copy and delete num elements from the back of the buffer
+/// @param p1 : iterator where begin to copy the elements
+/// @param num : number of elements to copy
+
+
+
+CODE:
+::pop_move_back(iter_t it_dest, size_t num)
+{
+    static_assert ( std::is_same <value_iter<iter_t>, Value_t>::value,
+                    "Incompatible iterator");
+    if (num == 0) return;
+#ifdef __BS_DEBUG
+    assert ( num <= nelem);
+#endif
+    nelem -= num;
+    size_t pos = (first_pos + nelem) & MASK;
+    for (size_t i = 0; i < num; ++i)
+    {
+        *(it_dest++) = std::move(ptr[pos++ & MASK]);
+    };
+};
+COMMENT:
+/// @brief move and delete num elements from the back of the buffer
+/// @param p1 : iterator where begin to move the elements
+/// @param num : number of elements to move
+
+
+
+CODE:
+::push_copy_front(iter_t it_src, size_t num)
+{
+    static_assert ( std::is_same <value_iter<iter_t>, Value_t>::value,
+                    "Incompatible iterator");
+    if (num == 0) return;
+#ifdef __BS_DEBUG
+    assert ( free_size() >= num);
+#endif
+    nelem += num;
+
+    first_pos = (first_pos + NMAX - num) & MASK;
+    size_t pos = first_pos;
+    for (size_t i = 0; i < num; ++i)
+    {
+        ptr[(pos++) & MASK] = *(it_src++);
+    };
+};
+COMMENT:
+/// @brief copy num elements in the front of the buffer
+/// @param it_src : iterator from where begin to copy the elements
+/// @param mun : number of element to copy
+
+
+
+CODE:
+::push_move_front(iter_t it_src, size_t num)
+{
+    static_assert ( std::is_same <value_iter<iter_t>, Value_t>::value,
+                    "Incompatible iterator");
+    if (num == 0) return;
+#ifdef __BS_DEBUG
+    assert ( free_size() >= num);
+#endif
+    nelem += num;
+    size_t pos = first_pos;
+    for (size_t i = 0; i < num; ++i)
+    {
+        ptr[(pos++) & MASK] = std::move(*(it_src++));
+    };
+};
+COMMENT:
+/// @brief move num elements in the front of the buffer
+/// @param p1 : iterator from where begin to move the elements
+/// @param mun : number of element to move
+
+
+
+CODE:
+::push_copy_back(iter_t it_src, size_t num)
+{
+    static_assert ( std::is_same <value_iter<iter_t>, Value_t>::value,
+                    "Incompatible iterator");
+    if (num == 0) return;
+#ifdef __BS_DEBUG
+    assert ( free_size() >= num);
+#endif
+    size_t pos = first_pos + nelem;
+    nelem += num;
+    for (size_t i = 0; i < num; ++i)
+    {
+        ptr[(pos++) & MASK] = *(it_src++);
+    };
+};
+COMMENT:
+/// @brief copy num elements in the back of the buffer
+/// @param p1 : iterator from where begin to copy the elements
+/// @param mun : number of element to copy
+
+
+
+CODE:
+::push_move_back(iter_t it_src, size_t num)
+{
+    static_assert ( std::is_same <value_iter<iter_t>, Value_t>::value,
+                    "Incompatible iterator");
+    if (num == 0) return;
+#ifdef __BS_DEBUG
+    assert ( free_size() >= num);
+#endif
+    size_t pos = first_pos + nelem;
+    nelem += num;
+    for (size_t i = 0; i < num; ++i)
+    {
+        ptr[(pos++) & MASK] = std::move(*(it_src++));
+    };
+};
+COMMENT:
+/// @brief move num elements in the back of the buffer
+/// @param p1 : iterator from where begin to move the elements
+/// @param mun : number of element to move
+
+
+
+CODE:
+inline void construct_object (Value_t *ptr, Args &&... args)
+{
+    (::new (static_cast<void *>(ptr)) Value_t(std::forward< Args > (args)...));
+};
+COMMENT:
+/// @brief create an object in the memory specified by ptr
+/// @param ptr : pointer to the memory where to create the object
+/// @param args : arguments to the constructor
+
+
+
+CODE:
+inline void destroy_object(Value_t *ptr)
+{
+    ptr->~Value_t();
+};
+COMMENT:
+/// @brief destroy an object in the memory specified by ptr
+/// @param ptr : pointer to the object to destroy
+
+
+
+CODE:
+inline void initialize (Iter_t first, Iter_t last, Value_t & val)
+{
+    //------------------------------------------------------------------------
+    //                  Metaprogramming
+    //------------------------------------------------------------------------
+    typedef value_iter<Iter_t> value_t;
+    static_assert (std::is_same< Value_t, value_t >::value,
+                    "Incompatible iterators\n");
+
+    //------------------------------------------------------------------------
+    //                 Code
+    //------------------------------------------------------------------------
+    if (first == last) return;
+    construct_object(&(*first), std::move(val));
+
+    Iter_t it1 = first, it2 = first + 1;
+    while (it2 != last)
+    {
+        construct_object(&(*(it2++)), std::move(*(it1++)));
+    };
+    val = std::move(*(last - 1));
+};
+COMMENT:
+/// @brief initialize a range of objects with the object val moving across them
+/// @param first : itertor to the first element to initialize
+/// @param last : iterator to the last element to initialize
+/// @param val : object used for the initialization
+
+
+
+CODE:
+inline Iter2_t move_forward (Iter2_t it_dest, Iter1_t first, Iter1_t last)
+{
+    //------------------------------------------------------------------------
+    //                  Metaprogramming
+    //------------------------------------------------------------------------
+    typedef value_iter<Iter1_t> value1_t;
+    typedef value_iter<Iter2_t> value2_t;
+    static_assert (std::is_same< value1_t, value2_t >::value,
+                    "Incompatible iterators\n");
+
+    //------------------------------------------------------------------------
+    //                 Code
+    //------------------------------------------------------------------------
+    while (first != last)
+    {   *it_dest++ = std::move(*first++);
+    }
+    return it_dest;
+
+};
+COMMENT:
+/// @brief Move initialized objets
+/// @param it_dest : iterator to the final place of the objects
+/// @param first : iterator to the first element to move
+/// @param last : iterator to the last element to move
+/// @return Output iterator to the element past the last element
+///         moved (it_dest + (last - first))
+
+
+
+CODE:
+inline Iter2_t move_backward(Iter2_t it_dest, Iter1_t  first, Iter1_t last)
+{
+    //------------------------------------------------------------------------
+    //                  Metaprogramming
+    //------------------------------------------------------------------------
+    typedef value_iter<Iter1_t> value1_t;
+    typedef value_iter<Iter2_t> value2_t;
+    static_assert (std::is_same< value1_t, value2_t >::value,
+                    "Incompatible iterators\n");
+
+    //------------------------------------------------------------------------
+    //                 Code
+    //------------------------------------------------------------------------
+    while (first != last)
+    {   *(--it_dest) = std::move (*(--last));
+    }
+    return it_dest;
+};
+COMMENT:
+/// @brief Move initialized objets in reverse order
+/// @param it_dest : last iterator to the final place of the objects
+/// @param first : iterator to the first element to move
+/// @param last : iterator to the last element to move
+
+
+
+CODE:
+inline Value_t * move_construct(Value_t *ptr, Iter_t first, Iter_t last)
+{
+    //------------------------------------------------------------------------
+    //                  Metaprogramming
+    //------------------------------------------------------------------------
+    typedef typename iterator_traits<Iter_t>::value_type value2_t;
+    static_assert (std::is_same< Value_t, value2_t >::value,
+                    "Incompatible iterators\n");
+
+    //------------------------------------------------------------------------
+    //                    Code
+    //------------------------------------------------------------------------
+    while (first != last)
+    {
+        ::new (static_cast<void *>(ptr++)) Value_t(std::move(*(first++)));
+    };
+    return ptr;
+};
+COMMENT:
+/// @brief Move objets to uninitialized memory
+/// @param ptr : pointer to the memory where to create the objects
+/// @param first : iterator to the first element to move
+/// @param last : iterator to the last element to move
+
+
+
+CODE:
+inline void destroy(Iter_t first, const Iter_t last)
+{
+    while (first != last)
+        destroy_object(&(*(first++)));
+};
+COMMENT:
+/// @brief destroy the elements between first and last
+/// @param first : iterator to the first element to destroy
+/// @param last : iterator to the last element to destroy
+
+
+
+CODE:
+inline void reverse(Iter_t first, Iter_t last)
+{
+    std::reverse ( first, last);
+};
+COMMENT:
+/// @brief destroy the elements between first and last
+/// @param first : iterator to the first element to destroy
+/// @param last : iterator to the last element to destroy
+
+
+
+CODE:
+static Iter3_t merge(Iter1_t buf1, const Iter1_t end_buf1, Iter2_t buf2,
+                     const Iter2_t end_buf2, Iter3_t buf_out, Compare comp)
+{
+    //-------------------------------------------------------------------------
+    //                       Metaprogramming
+    //------------------------------------------------------------------------- 
+    typedef value_iter<Iter1_t> value1_t;
+    typedef value_iter<Iter2_t> value2_t;
+    typedef value_iter<Iter3_t> value3_t;
+    static_assert (std::is_same< value1_t, value2_t >::value,
+                    "Incompatible iterators\n");
+    static_assert (std::is_same< value3_t, value2_t >::value,
+                    "Incompatible iterators\n");
+
+    //-------------------------------------------------------------------------
+    //                       Code
+    //-------------------------------------------------------------------------
+    const size_t MIN_CHECK = 1024;
+
+    if (size_t((end_buf1 - buf1) + (end_buf2 - buf2)) >= MIN_CHECK)
+    {
+        if (buf1 == end_buf1) return move_forward(buf_out, buf2, end_buf2);
+        if (buf2 == end_buf2) return move_forward(buf_out, buf1, end_buf1);
+
+        if (not comp(*buf2, *(end_buf1 - 1)))
+        {
+            Iter3_t mid = move_forward(buf_out, buf1, end_buf1);
+            return move_forward(mid, buf2, end_buf2);
+        };
+
+        if (comp(*(end_buf2 - 1), *buf1))
+        {
+            Iter3_t mid = move_forward(buf_out, buf2, end_buf2);
+            return move_forward(mid, buf1, end_buf1);
+        };
+    };
+    while ((buf1 != end_buf1) and (buf2 != end_buf2))
+    {
+        *(buf_out++) = (not comp(*buf2, *buf1)) ?
+                        std::move(*(buf1++)) : std::move(*(buf2++));
+    };
+
+    return (buf1 == end_buf1) ?
+                    move_forward(buf_out, buf2, end_buf2) :
+                    move_forward(buf_out, buf1, end_buf1);
+}
+COMMENT:
+/// @brief Merge two contiguous buffers pointed by buf1 and buf2, and put
+///        in the buffer pointed by buf_out
+/// @param buf1 : iterator to the first element in the first buffer
+/// @param end_buf1 : final iterator of first buffer
+/// @param buf2 : iterator to the first iterator to the second buffer
+/// @param end_buf2 : final iterator of the second buffer
+/// @param buf_out : buffer where move the elements merged
+/// @param comp : comparison object
+
+
+
+CODE:
+static Value_t *merge_construct(Iter1_t first1, const Iter1_t last1,
+                                Iter2_t first2, const Iter2_t last2,
+                                Value_t *it_out, Compare comp)
+{
+    //-------------------------------------------------------------------------
+    //                       Metaprogramming
+    //------------------------------------------------------------------------- 
+    typedef value_iter<Iter1_t> type1;
+    typedef value_iter<Iter2_t> type2;
+    static_assert (std::is_same< Value_t, type1 >::value,
+                    "Incompatible iterators\n");
+    static_assert (std::is_same< Value_t, type2 >::value,
+                    "Incompatible iterators\n");
+
+    //-------------------------------------------------------------------------
+    //                       Code
+    //-------------------------------------------------------------------------
+    const size_t MIN_CHECK = 1024;
+
+    if (size_t((last1 - first1) + (last2 - first2)) >= MIN_CHECK)
+    {
+        if (first1 == last1) return move_construct(it_out, first2, last2);
+        if (first2 == last2) return move_construct(it_out, first1, last1);
+
+        if (not comp(*first2, *(last1 - 1)))
+        {
+            Value_t* mid = move_construct(it_out, first1, last1);
+            return move_construct(mid, first2, last2);
+        };
+
+        if (comp(*(last2 - 1), *first1))
+        {
+            Value_t* mid = move_construct(it_out, first2, last2);
+            return move_construct(mid, first1, last1);
+        };
+    };
+    while (first1 != last1 and first2 != last2)
+    {
+        construct_object((it_out++),
+                        (not comp(*first2, *first1)) ?
+                                        std::move(*(first1++)) :
+                                        std::move(*(first2++)));
+    };
+    return (first1 == last1) ?
+                    move_construct(it_out, first2, last2) :
+                    move_construct(it_out, first1, last1);
+};
+COMMENT:
+/// @brief Merge two contiguous buffers pointed by first1 and first2, and put
+///        in the uninitialized buffer pointed by it_out
+/// @param first1 : iterator to the first element in the first buffer
+/// @param last1 : last iterator of the first buffer
+/// @param first2 : iterator to the first element to the second buffer
+/// @param last2 : final iterator of the second buffer
+/// @param it_out : uninitialized buffer where move the elements merged
+/// @param comp : comparison object
+
+
+
+CODE:
+static Iter2_t merge_half(Iter1_t buf1, const Iter1_t end_buf1, Iter2_t buf2,
+                          const Iter2_t end_buf2, Iter2_t buf_out, Compare comp)
+{
+    //-------------------------------------------------------------------------
+    //                         Metaprogramming
+    //------------------------------------------------------------------------- 
+    typedef value_iter<Iter1_t> value1_t;
+    typedef value_iter<Iter2_t> value2_t;
+    static_assert (std::is_same< value1_t, value2_t >::value,
+                    "Incompatible iterators\n");
+
+    //-------------------------------------------------------------------------
+    //                         Code
+    //-------------------------------------------------------------------------
+#ifdef __BS_DEBUG
+    assert ( (buf2 - buf_out) == ( end_buf1 - buf1));
+#endif
+    const size_t MIN_CHECK = 1024;
+
+    if (size_t((end_buf1 - buf1) + (end_buf2 - buf2)) >= MIN_CHECK)
+    {
+        if (buf1 == end_buf1) return end_buf2;
+        if (buf2 == end_buf2) return move_forward(buf_out, buf1, end_buf1);
+
+        if (not comp(*buf2, *(end_buf1 - 1)))
+        {
+            move_forward(buf_out, buf1, end_buf1);
+            return end_buf2;
+        };
+
+        if (comp(*(end_buf2 - 1), *buf1))
+        {
+            Iter2_t mid = move_forward(buf_out, buf2, end_buf2);
+            return move_forward(mid, buf1, end_buf1);
+        };
+    };
+    while ((buf1 != end_buf1) and (buf2 != end_buf2))
+    {
+        *(buf_out++) = (not comp(*buf2, *buf1)) ?
+                        std::move(*(buf1++)) : std::move(*(buf2++));
+    };
+    return (buf2 == end_buf2)? move_forward(buf_out, buf1, end_buf1) : end_buf2;
+};
+COMMENT:
+/// @param buf1 : iterator to the first element of the first buffer
+/// @param end_buf1 : iterator to the last element of the first buffer
+/// @param buf2 : iterator to the first element of the second buffer
+/// @param end_buf2 : iterator to the last element of the second buffer
+/// @param buf_out : iterator to the first element to the buffer where put
+///                  the result
+/// @param comp : object for Compare two elements of the type pointed
+///                by the Iter1_t and Iter2_t
+
+
+
+CODE:
+static Iter2_t merge_half_backward(Iter1_t buf1, Iter1_t end_buf1, Iter2_t buf2,
+                                   Iter2_t end_buf2, Iter1_t end_buf_out,
+                                   Compare comp)
+{
+    //-------------------------------------------------------------------------
+    //                         Metaprogramming
+    //-------------------------------------------------------------------------
+    typedef value_iter<Iter1_t> value1_t;
+    typedef value_iter<Iter2_t> value2_t;
+    static_assert (std::is_same< value1_t, value2_t >::value,
+                    "Incompatible iterators\n");
+
+    //-------------------------------------------------------------------------
+    //                         Code
+    //-------------------------------------------------------------------------
+#ifdef __BS_DEBUG
+    assert ((end_buf_out - end_buf1) == (end_buf2 - buf2) );
+#endif
+    const size_t MIN_CHECK = 1024;
+
+    if (size_t((end_buf1 - buf1) + (end_buf2 - buf2)) >= MIN_CHECK)
+    {
+        if (buf2 == end_buf2) return buf1;
+        if (buf1 == end_buf1)
+            return here::move_backward(end_buf_out, buf2, end_buf2);
+
+        if (not comp(*buf2, *(end_buf1 - 1)))
+        {
+            here::move_backward(end_buf_out, buf2, end_buf2);
+            return buf1;
+        };
+
+        if (comp(*(end_buf2 - 1), *buf1))
+        {
+            Iter1_t mid = here::move_backward(end_buf_out, buf1, end_buf1);
+            return here::move_backward(mid, buf2, end_buf2);
+        };
+    };
+    while ((buf1 != end_buf1) and (buf2 != end_buf2))
+    {
+        *(--end_buf_out) =
+                        (not comp(*(end_buf2 - 1), *(end_buf1 - 1))) ?
+                                        std::move(*(--end_buf2)):
+                                        std::move(*(--end_buf1));
+    };
+    return (buf1 == end_buf1) ?
+                    here::move_backward(end_buf_out, buf2, end_buf2) : buf1;
+};
+COMMENT:
+/// @param buf1 : iterator to the first element of the first buffer
+/// @param end_buf1 : iterator to the last element of the first buffer
+/// @param buf2 : iterator to the first element of the second buffer
+/// @param end_buf2 : iterator to the last element of the second buffer
+/// @param buf_out : iterator to the first element to the buffer where put
+///                  the result
+/// @param comp : object for Compare two elements of the type pointed
+///                by the Iter1_t and Iter2_t
+
+
+
+CODE:
+static bool merge_uncontiguous(Iter1_t src1, const Iter1_t end_src1,
+                               Iter2_t src2, const Iter2_t end_src2,
+                               Iter3_t aux, Compare comp)
+{
+    //-------------------------------------------------------------------------
+    //                    Metaprogramming
+    //------------------------------------------------------------------------- 
+    typedef value_iter<Iter1_t> type1;
+    typedef value_iter<Iter2_t> type2;
+    typedef value_iter<Iter3_t> type3;
+    static_assert (std::is_same< type1, type2 >::value,
+                    "Incompatible iterators\n");
+    static_assert (std::is_same< type3, type2 >::value,
+                    "Incompatible iterators\n");
+
+    //-------------------------------------------------------------------------
+    //                    Code
+    //-------------------------------------------------------------------------
+    if (src1 == end_src1 or src2 == end_src2
+                    or not comp(*src2, *(end_src1 - 1))) return true;
+
+    while (src1 != end_src1 and not comp(*src2, *src1))
+        ++src1;
+
+    Iter3_t const end_aux = aux + (end_src1 - src1);
+    Iter2_t src2_first = src2;
+    move_forward(aux, src1, end_src1);
+
+    while ((src1 != end_src1) and (src2 != end_src2))
+    {
+        *(src1++) = std::move((not comp(*src2, *aux)) ? *(aux++) : *(src2++));
+    }
+
+    if (src2 == end_src2)
+    {
+        while (src1 != end_src1)
+            *(src1++) = std::move(*(aux++));
+        move_forward(src2_first, aux, end_aux);
+    }
+    else
+    {
+        merge_half(aux, end_aux, src2, end_src2, src2_first, comp);
+    };
+    return false;
+};
+COMMENT:
+/// @brief : merge two uncontiguous buffers, placing the results in the buffers
+///          Use an auxiliary buffer pointed by aux
+/// @param src1 : iterator to the first element of the first buffer
+/// @param end_src1 : last iterator  of the first buffer
+/// @param src2 : iterator to the first element of the second buffer
+/// @param end_src2 : last iterator  of the second buffer
+/// @param aux  : iterator to the first element of the auxiliary buffer
+/// @param comp : object for to Compare elements
+/// @return true : not changes done,  false : changes in the buffers
+/// @remarks
+
+
+
+CODE:
+static bool merge_contiguous(Iter1_t src1, Iter1_t src2, Iter1_t end_src2,
+                             Iter2_t buf, Compare comp)
+{
+    //-------------------------------------------------------------------------
+    //                      Metaprogramming
+    //------------------------------------------------------------------------- 
+    typedef value_iter<Iter1_t> type1;
+    typedef value_iter<Iter2_t> type2;
+    static_assert (std::is_same< type1, type2 >::value,
+                    "Incompatible iterators\n");
+
+    //-------------------------------------------------------------------------
+    //                         Code
+    //-------------------------------------------------------------------------
+    if (src1 == src2 or src2 == end_src2 or not comp(*src2, *(src2 - 1)))
+        return true;
+
+    Iter1_t end_src1 = src2;
+    while (src1 != end_src1 and not comp(*src2, *src1))
+        ++src1;
+
+    if (src1 == end_src1) return false;
+
+    size_t nx = end_src1 - src1;
+    move_forward(buf, src1, end_src1);
+    merge_half(buf, buf + nx, src2, end_src2, src1, comp);
+    return false;
+};
+COMMENT:
+/// @brief : merge two contiguous buffers,using an auxiliary buffer pointed
+///          by buf. The results are in src1 and src2
+/// @param src1: iterator to the first position of the first buffer
+/// @param src2: final iterator of the first buffer and first iterator
+///              of the second buffer
+/// @param end_src2 : final iterator of the second buffer
+/// @param buf  : iterator to buffer used as auxiliary memory
+/// @param comp : object for to Compare elements
+/// @return true : not changes done,  false : changes in the buffers
+
+
+
+CODE:
+static bool merge_circular(Iter1_t buf1, Iter1_t end_buf1, Iter2_t buf2,
+                           Iter2_t end_buf2, Circular &circ, Compare comp,
+                           Iter1_t &it1_out, Iter2_t &it2_out)
+{
+    //-------------------------------------------------------------------------
+    //                      Metaprogramming
+    //-------------------------------------------------------------------------
+    typedef value_iter<Iter1_t> type1;
+    typedef value_iter<Iter2_t> type2;
+    static_assert (std::is_same< type1, type2 >::value,
+                    "Incompatible iterators\n");
+    typedef typename Circular::value_t type3;
+    static_assert (std::is_same<type1, type3>::value,
+                    "Incompatible iterators\n");
+
+    //-------------------------------------------------------------------------
+    //                      Code
+    //-------------------------------------------------------------------------
+#ifdef __BS_DEBUG
+    assert ( circ.free_size() >= size_t ((end_buf1-buf1) + (end_buf2-buf2)));
+#endif
+
+    if (not comp(*buf2, *(end_buf1 - 1)))
+    {
+        circ.push_move_back(buf1, (end_buf1 - buf1));
+        it1_out = end_buf1;
+        it2_out = buf2;
+        return true;
+    };
+    if (comp(*(end_buf2 - 1), *buf1))
+    {
+        circ.push_move_back(buf2, (end_buf2 - buf2));
+        it1_out = buf1;
+        it2_out = end_buf2;
+        return false;
+    }
+    while (buf1 != end_buf1 and buf2 != end_buf2)
+    {
+        circ.push_back(comp(*buf2, *buf1) ? std::move(*(buf2++))
+                                          : std::move(*(buf1++)));
+    };
+    it2_out = buf2;
+    it1_out = buf1;
+    bool ret = (buf1 == end_buf1);
+    return ret;
+};
+COMMENT:
+/// @brief : merge two buffers,using a circular buffer
+///          This function don't check the parameters
+/// @param buf1: iterator to the first position of the first buffer
+/// @param end_buf1: iterator after the last element of the first buffer
+/// @param buf2: iterator to the first element of the secind buffer
+/// @param end_buf2: iterator to the first element of the secind buffer
+/// @param circ : circular buffer
+/// @param comp : comparison object
+/// @return true : finished buf1,  false : finished buf2
+/// @comments : be carefully because the iterators buf1 and buf2 are modified
+
+
+
+CODE:
+inline Iter_t internal_find_first(Iter_t first, Iter_t last,
+                                  const typename Filter::key &val,
+                                  const Compare & comp = Compare(), 
+                                  Filter flt = Filter())
+{
+    Iter_t LI = first, LS = last - 1, it_out = first;
+    while (LI != LS)
+    {
+        it_out = LI + ((LS - LI) >> 1);
+        if (comp(flt(*it_out), val))
+            LI = it_out + 1;
+        else LS = it_out;
+    };
+    return LS;
+};
+COMMENT:
+/// @param [in] first : iterator to the first element of the range
+/// @param [in] last : iterator to the last element of the range
+/// @param [in] val : value to find
+/// @param [in] comp : object for to compare two value_t objects
+/// @return iterator to the element found,
+
+
+
+CODE:
+inline Iter_t internal_find_last(Iter_t first, Iter_t last,
+                                 const typename Filter::key &val,
+                                 const Compare & comp = Compare(), Filter flt =
+                                                 Filter())
+{
+    Iter_t LI = first, LS = last - 1, it_out = first;
+    while (LI != LS)
+    {
+        it_out = LI + ((LS - LI + 1) >> 1);
+        if (comp(val, flt(*it_out))) LS = it_out - 1;
+        else                         LI = it_out;
+    };
+    return LS;
+};
+COMMENT:
+/// @param [in] first : iterator to the first element of the range
+/// @param [in] last : iterator to the last element of the range
+/// @param [in] val : value to find
+/// @param [in] comp : object for to compare two value_t objects
+/// @return iterator to the element found, if not found return last
+
+
+
+CODE:
+inline Iter_t find_first(Iter_t first, Iter_t last,
+                         const typename Filter::key &val, 
+                         const Compare & comp = Compare(),
+                         Filter flt = Filter())
+{
+    assert((last - first) >= 0);
+    if (first == last) return last;
+    Iter_t LS = internal_find_first(first, last, val, comp, flt);
+    return (comp(flt(*LS), val) or comp(val, flt(*LS))) ? last : LS;
+};
+COMMENT:
+/// @brief find if a value exist in the range [first, last). If exist return the
+///        iterator to the first occurrence. If don't exist return last
+/// @param [in] first : iterator to the first element of the range
+/// @param [in] last : iterator to the last element of the range
+/// @param [in] val : value to find
+/// @param [in] comp : object for to compare two value_t objects
+/// @return iterator to the element found, and if not last
+
+
+
+CODE:
+inline Iter_t find_last(Iter_t first, Iter_t last,
+                        const typename Filter::key &val, 
+                        const Compare & comp = Compare(),
+                        Filter flt = Filter())
+{
+    assert((last - first) >= 0);
+    if (last == first) return last;
+    Iter_t LS = internal_find_last(first, last, val, comp, flt);
+    return (comp(flt(*LS), val) or comp(val, flt(*LS))) ? last : LS;
+};
+COMMENT:
+/// @brief find if a value exist in the range [first, last). If exist return the
+///        iterator to the last occurrence. If don't exist return last
+/// @param [in] first : iterator to the first element of the range
+/// @param [in] last : iterator to the last element of the range
+/// @param [in] val : value to find
+/// @param [in] comp : object for to compare two value_t objects
+/// @return iterator to the element found, if not found return last
+
+
+
+CODE:
+inline Iter_t lower_bound(Iter_t first, Iter_t last,
+                          const typename Filter::key &val,
+                          const Compare & comp = Compare(), 
+                          Filter flt = Filter())
+{
+    assert((last - first) >= 0);
+    if (last == first) return last;
+    Iter_t itaux = internal_find_first(first, last, val, comp, flt);
+    return (itaux == (last - 1) and comp(flt(*itaux), val)) ? last : itaux;
+};
+COMMENT:
+/// @brief Returns an iterator pointing to the first element in the range
+///        [first, last) that is not less than (i.e. greater or equal to) val.
+/// @param [in] last : iterator to the last element of the range
+/// @param [in] val : value to find
+/// @param [in] comp : object for to compare two value_t objects
+/// @return iterator to the element found
+
+
+
+CODE:
+inline Iter_t upper_bound(Iter_t first, Iter_t last,
+                          const typename Filter::key &val,
+                          const Compare & comp = Compare(), 
+                          Filter flt = Filter())
+{
+    assert((last - first) >= 0);
+    if (last == first) return last;
+    Iter_t itaux = internal_find_last(first, last, val, comp, flt);
+    return (itaux == first and comp(val, flt(*itaux))) ? itaux : itaux + 1;
+}
+COMMENT:
+/// @brief return the first element greather than val.If don't exist
+///        return last
+/// @param [in] first : iterator to the first element of the range
+/// @param [in] last : iterator to the last element of the range
+/// @param [in] val : value to find
+/// @param [in] comp : object for to compare two value_t objects
+/// @return iterator to the element found
+/// @remarks
+
+
+
+CODE:
+inline std::pair<Iter_t, Iter_t> equal_range(Iter_t first, Iter_t last,
+                                             const typename Filter::key &val,
+                                             const Compare & comp = Compare(),
+                                             Filter flt = Filter())
+{
+    return std::make_pair(lower_bound(first, last, val, comp, flt),
+                    upper_bound(first, last, val, comp, flt));
+};
+COMMENT:
+/// @brief return a pair of lower_bound and upper_bound with the value val.If
+///        don't exist return last in the two elements of the pair
+/// @param [in] first : iterator to the first element of the range
+/// @param [in] last : iterator to the last element of the range
+/// @param [in] val : value to find
+/// @param [in] comp : object for to compare two value_t objects
+/// @return pair of iterators
+
+
+
+CODE:
+inline Iter_t insert_first(Iter_t first, Iter_t last,
+                           const typename Filter::key &val,
+                           const Compare & comp = Compare(), Filter flt =
+                                           Filter())
+{
+    return lower_bound(first, last, val, comp, flt);
+};
+COMMENT:
+/// @brief find if a value exist in the range [first, last). If exist return the
+///        iterator to the first occurrence. If don't exist return last
+/// @param [in] first : iterator to the first element of the range
+/// @param [in] last : iterator to the last element of the range
+/// @param [in] val : value to find
+/// @param [in] comp : object for to compare two value_t objects
+/// @return iterator to the element found, and if not last
+
+
+
+CODE:
+inline Iter_t insert_last(Iter_t first, Iter_t last,
+                          const typename Filter::key &val,
+                          const Compare & comp = Compare(), Filter flt =
+                                          Filter())
+{
+    return upper_bound(first, last, val, comp, flt);
+};
+COMMENT:
+/// @brief find if a value exist in the range [first, last). If exist return the
+///        iterator to the last occurrence. If don't exist return last
+/// @param [in] first : iterator to the first element of the range
+/// @param [in] last : iterator to the last element of the range
+/// @param [in] val : value to find
+/// @param [in] comp : object for to compare two value_t objects
+/// @return iterator to the element found, if not found return last
+
+
+
+CODE:
+::block_indirect_sort(Iter_t first, Iter_t last, Compare cmp, uint32_t nthr)
+: bk(first, last, cmp), counter(0), ptr(nullptr), construct(false),
+  nthread(nthr)
+{
+    try
+    {
+        assert((last - first) >= 0);
+        size_t nelem = size_t(last - first);
+        if (nelem == 0) return;
+
+        //------------------- check if sort -----------------------------------
+        bool sorted = true;
+        for (Iter_t it1 = first, it2 = first + 1; it2 != last and (sorted =
+                        not bk.cmp(*it2, *it1)); it1 = it2++);
+        if (sorted) return;
+
+        //------------------- check if reverse sort ---------------------------
+        sorted = true;
+        for (Iter_t it1 = first, it2 = first + 1; it2 != last and (sorted =
+                        not bk.cmp(*it1, *it2)); it1 = it2++);
+
+        if (sorted)
+        {
+            size_t nelem2 = nelem >> 1;
+            Iter_t it1 = first, it2 = last - 1;
+            for (size_t i = 0; i < nelem2; ++i)
+            {
+                std::swap(*(it1++), *(it2--));
+            };
+            return;
+        };
+
+        //---------------- check if only single thread -----------------------
+        size_t nthreadmax = nelem / (Block_size * Group_size) + 1;
+        if (nthread > nthreadmax) nthread = (uint32_t) nthreadmax;
+
+        uint32_t nbits_size = (nbits64(sizeof(value_t)) >> 1);
+        if (nbits_size > 5) nbits_size = 5;
+        size_t max_per_thread = 1 << (18 - nbits_size);
+
+        if (nelem < (max_per_thread) or nthread < 2)
+        {
+            //intro_sort (first, last, bk.cmp);
+            pdqsort(first, last, bk.cmp);
+            return;
+        };
+
+        //----------- creation of the temporary buffer --------------------
+        ptr = std::get_temporary_buffer<value_t>(Block_size * nthread).first;
+        if (ptr == nullptr)
+        {
+            bk.error = true;
+            throw std::bad_alloc();
+        };
+
+        rglobal_buf = range_buf(ptr, ptr + (Block_size * nthread));
+        initialize(rglobal_buf, *first);
+        construct = true;
+
+        // creation of the buffers for the threads
+        std::vector<value_t *> vbuf(nthread);
+        for (uint32_t i = 0; i < nthread; ++i)
+        {
+            vbuf[i] = ptr + (i * Block_size);
+        };
+
+        // Insert the first work in the stack
+        bscu::atomic_write(counter, 1);
+        function_t f1 = [&]( )
+        {
+            start_function ( );
+            bscu::atomic_sub (counter, 1);
+        };
+        bk.works.emplace_back(f1);
+
+        //---------------------------------------------------------------------
+        //                    PROCESS
+        //---------------------------------------------------------------------
+        std::vector<std::future<void> > vfuture(nthread);
+
+        // The function launched with the futures is "execute the functions of
+        // the stack until this->counter is zero
+        // vbuf[i] is the memory from the main thread for to configure the
+        // thread local buffer
+        for (uint32_t i = 0; i < nthread; ++i)
+        {
+            auto f1 = [=, &vbuf]( )
+            {   bk.exec (vbuf[i], this->counter);};
+            vfuture[i] = std::async(std::launch::async, f1);
+        };
+        for (uint32_t i = 0; i < nthread; ++i)
+            vfuture[i].get();
+        if (bk.error) throw std::bad_alloc();
+    }
+    catch (std::bad_alloc &)
+    {
+        destroy_all();
+        throw;
+    }
+};
+COMMENT:
+/// @brief begin with the execution of the functions stored in works
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+/// @param comp : object for to compare two elements pointed by Iter_t
+///               iterators
+/// @param nthr : Number of threads to use in the process.When this value
+///               is lower than 2, the sorting is done with 1 thread
+
+
+
+CODE:
+::split_range(size_t pos_index1, size_t pos_index2, uint32_t level_thread)
+{
+    size_t nblock = pos_index2 - pos_index1;
+
+    //-------------------------------------------------------------------------
+    // In the blocks not sorted, the physical position is the logical position
+    //-------------------------------------------------------------------------
+    Iter_t first = bk.get_block(pos_index1).first;
+    Iter_t last = bk.get_range(pos_index2 - 1).last;
+
+    if (nblock < Group_size)
+    {
+        pdqsort(first, last, bk.cmp);
+        return;
+    };
+
+    size_t pos_index_mid = pos_index1 + (nblock >> 1);
+    atomic_t son_counter(1);
+
+    //-------------------------------------------------------------------------
+    // Insert in the stack the work for the second part, and the actual thread,
+    // execute the first part
+    //-------------------------------------------------------------------------
+    if (level_thread != 0)
+    {
+        auto f1 = [=, &son_counter]( )
+        {
+            split_range (pos_index_mid, pos_index2, level_thread - 1);
+            bscu::atomic_sub (son_counter, 1);
+        };
+        bk.works.emplace_back(f1);
+        if (bk.error) return;
+        split_range(pos_index1, pos_index_mid, level_thread - 1);
+    }
+    else
+    {
+        Iter_t mid = first + ((nblock >> 1) * Block_size);
+        auto f1 = [=, &son_counter]( )
+        {
+            parallel_sort_t (bk, mid, last);
+            bscu::atomic_sub (son_counter, 1);
+        };
+        bk.works.emplace_back(f1);
+        if (bk.error) return;
+        parallel_sort_t(bk, first, mid);
+    };
+    bk.exec(son_counter);
+    if (bk.error) return;
+    merge_blocks_t(bk, pos_index1, pos_index_mid, pos_index2);
+};
+COMMENT:
+/// @brief this function splits a range of positions in the index, and
+///        depending of the size, sort directly or make to a recursive call
+///        to split_range
+/// @param pos_index1 : first position in the index
+/// @param pos_index2 : position after the last in the index
+/// @param level_thread : depth of the call. When 0 sort the blocks
+
+
+
+CODE:
+::start_function(void)
+{
+    if (nthread < BOOST_NTHREAD_BORDER)
+    {
+        parallel_sort_t(bk, bk.global_range.first, bk.global_range.last);
+    }
+    else
+    {
+        size_t level_thread = nbits64(nthread - 1) - 1;
+        split_range(0, bk.nblock, level_thread - 1);
+        if (bk.error) return;
+        move_blocks_t k(bk);
+    };
+};
+COMMENT:
+/// @brief this function init the process. When the number of threads is lower
+///        than a predefined value, sort the elements with a parallel pdqsort.
+
+
+
+CODE:
+inline void block_indirect_sort_call(Iter_t first, Iter_t last, Compare cmp,
+                uint32_t nthr)
+{
+    block_indirect_sort<128, 128, Iter_t, Compare>(first, last, cmp, nthr);
+};
+COMMENT:
+/// @brief This class is select the block size in the block_indirect_sort
+///        algorithm depending of the type and size of the data to sort
+
+
+
+CODE:
+inline void block_indirect_sort_call (Iter_t first, Iter_t last, Compare cmp,
+                                      uint32_t nthr)
+{
+    block_indirect_sort<block_size<sizeof (value_iter<Iter_t> )>::data, 64,
+                        Iter_t, Compare> (first, last, cmp, nthr);
+};
+COMMENT:
+/// @struct block_indirect_sort_call
+/// @brief This class is select the block size in the block_indirect_sort
+///        algorithm depending of the type and size of the data to sort
+
+
+
+CODE:
+void block_indirect_sort(Iter_t first, Iter_t last)
+{
+    typedef bscu::compare_iter<Iter_t> Compare;
+    blk_detail::block_indirect_sort_call (first, last, Compare(),
+                                          std::thread::hardware_concurrency());
+}
+COMMENT:
+/// @brief invocation of block_indirtect_sort with 2 parameters
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+
+
+
+CODE:
+void block_indirect_sort(Iter_t first, Iter_t last, uint32_t nthread)
+{
+    typedef bscu::compare_iter<Iter_t> Compare;
+    blk_detail::block_indirect_sort_call(first, last, Compare(), nthread);
+}
+COMMENT:
+/// @brief invocation of block_indirtect_sort with 3 parameters. The third is 
+///        the number of threads
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+/// @param nthread : Number of threads to use in the process. When this value
+///                  is lower than 2, the sorting is done with 1 thread
+
+
+
+CODE:
+void block_indirect_sort(Iter_t first, Iter_t last, Compare comp)
+{
+    blk_detail::block_indirect_sort_call (first, last, comp,
+                                      std::thread::hardware_concurrency());
+}
+COMMENT:
+/// @brief invocation of block_indirtect_sort with 3 parameters. The third is 
+///        the comparison object
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+/// @param comp : object for to compare two elements pointed by Iter_t
+///               iterators
+
+
+
+CODE:
+void block_indirect_sort (Iter_t first, Iter_t last, Compare comp,
+                          uint32_t nthread)
+{
+    blk_detail::block_indirect_sort_call(first, last, comp, nthread);
+}
+COMMENT:
+/// @brief invocation of block_indirtect_sort with 4 parameters. 
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+/// @param comp : object for to compare two elements pointed by Iter_t
+///               iterators
+/// @param nthread : Number of threads to use in the process. When this value
+///                  is lower than 2, the sorting is done with 1 thread
+
+
+
+CODE:
+::merge_blocks( backbone_t &bkb, size_t pos_index1, size_t pos_index2,
+                size_t pos_index3) : bk(bkb)
+{
+    size_t nblock1 = pos_index2 - pos_index1;
+    size_t nblock2 = pos_index3 - pos_index2;
+    if (nblock1 == 0 or nblock2 == 0) return;
+
+    //-----------------------------------------------------------------------
+    // Merging of the two intervals
+    //-----------------------------------------------------------------------
+    std::vector<block_pos> vpos1, vpos2;
+    vpos1.reserve(nblock1 + 1);
+    vpos2.reserve(nblock2 + 1);
+
+    for (size_t i = pos_index1; i < pos_index2; ++i)
+    {
+        vpos1.emplace_back(bk.index[i].pos(), true);
+    };
+
+    for (size_t i = pos_index2; i < pos_index3; ++i)
+    {
+        vpos2.emplace_back(bk.index[i].pos(), false);
+    };
+    //-------------------------------------------------------------------
+    //  tail process
+    //-------------------------------------------------------------------
+    if (vpos2.back().pos() == (bk.nblock - 1)
+                    and bk.range_tail.first != bk.range_tail.last)
+    {
+        tail_process(vpos1, vpos2);
+        nblock1 = vpos1.size();
+        nblock2 = vpos2.size();
+    };
+
+    compare_block_pos_t cmp_blk(bk.global_range.first, bk.cmp);
+    if (bk.error) return;
+    bscu::merge(vpos1.begin(), vpos1.end(), vpos2.begin(), vpos2.end(),
+                    bk.index.begin() + pos_index1, cmp_blk);
+    if (bk.error) return;
+    // Extracting the ranges for to merge the elements
+    extract_ranges(range_pos(pos_index1, pos_index1 + nblock1 + nblock2));
+}
+COMMENT:
+/// @brief make the indirect merge of the two range_pos defined by their index
+///        position [pos_index1, pos_index2 ) and [ pos_index2, pos_index3 )
+/// @param bkb : backbone with all the data to sort , and the internal data
+///              structures of the algorithm
+/// @param pos_index1 : first position of the first range in the index
+/// @param pos_index2 : last position of the first range and first position
+///                     of the second range in the index
+/// @param pos_index3 : last position of the second range in the index
+
+
+
+CODE:
+::tail_process( std::vector<block_pos> &vblkpos1,
+                std::vector<block_pos> &vblkpos2 )
+{
+    if (vblkpos1.size() == 0 or vblkpos2.size() == 0) return;
+
+    vblkpos2.pop_back();
+
+    size_t posback1 = vblkpos1.back().pos();
+    range_it range_back1 = bk.get_range(posback1);
+
+    if (bsc::is_mergeable(range_back1, bk.range_tail, bk.cmp))
+    {
+        bsc::merge_uncontiguous(range_back1, bk.range_tail, bk.get_range_buf(),
+                        bk.cmp);
+        if (vblkpos1.size() > 1)
+        {
+            size_t pos_aux = vblkpos1[vblkpos1.size() - 2].pos();
+            range_it range_aux = bk.get_range(pos_aux);
+
+            if (bsc::is_mergeable(range_aux, range_back1, bk.cmp))
+            {
+                vblkpos2.emplace_back(posback1, false);
+                vblkpos1.pop_back();
+            };
+        };
+    };
+}
+COMMENT:
+/// @brief make the process when the second vector of block_pos to merge is
+///        the last, and have an incomplete block ( tail)
+/// @param vblkpos1 : first vector of block_pos elements to merge
+/// @param vblkpos2 : second vector of block_pos elements to merge
+
+
+
+CODE:
+::cut_range(range_pos rng_input)
+{
+    if (rng_input.size() < Group_size)
+    {
+        merge_range_pos(rng_input);
+        return;
+    };
+
+    atomic_t counter(0);
+    size_t npart = (rng_input.size() + Group_size - 1) / Group_size;
+    size_t size_part = rng_input.size() / npart;
+
+    size_t pos_ini = rng_input.first;
+    size_t pos_last = rng_input.last;
+
+    while (pos_ini < pos_last)
+    {
+        size_t pos = pos_ini + size_part;
+        while (pos < pos_last
+                        and bk.index[pos - 1].side() == bk.index[pos].side())
+        {
+            ++pos;
+        };
+        if (pos < pos_last)
+        {
+            merge_uncontiguous(bk.get_range(bk.index[pos - 1].pos()),
+                            bk.get_range(bk.index[pos].pos()),
+                            bk.get_range_buf(), bk.cmp);
+        }
+        else pos = pos_last;
+        if ((pos - pos_ini) > 1)
+        {
+            range_pos rng_aux(pos_ini, pos);
+            function_merge_range_pos(rng_aux, counter, bk.error);
+        };
+        pos_ini = pos;
+    };
+    bk.exec(counter); // wait until finish all the ranges
+}
+COMMENT:
+/// @brief when the rng_input is greather than Group_size, this function divide
+///        it in several parts creating function_t elements, which are inserted
+///        in the concurrent stack of the backbone
+/// @param rng_input : range to divide
+
+
+
+CODE:
+::merge_range_pos(range_pos rng_input)
+{
+    if (rng_input.size() < 2) return;
+    range_buf rbuf = bk.get_range_buf();
+
+    range_it rng_prev = bk.get_range(bk.index[rng_input.first].pos());
+    move_forward(rbuf, rng_prev);
+    range_it rng_posx(rng_prev);
+
+    for (size_t posx = rng_input.first + 1; posx != rng_input.last; ++posx)
+    {
+        rng_posx = bk.get_range(bk.index[posx].pos());
+        bsc::merge_flow(rng_prev, rbuf, rng_posx, bk.cmp);
+        rng_prev = rng_posx;
+
+    };
+    move_forward(rng_posx, rbuf);
+}
+COMMENT:
+/// @brief make the indirect merge of the blocks inside the rng_input
+/// @param rng_input : range of positions of the blocks to merge
+
+
+
+CODE:
+::extract_ranges(range_pos range_input)
+{
+    if (range_input.size() < 2) return;
+    atomic_t counter(0);
+
+    // The names with x are positions of the index
+    size_t posx_ini = range_input.first;
+    block_pos bp_posx_ini = bk.index[posx_ini];
+
+    range_it rng_max = bk.get_range(bp_posx_ini.pos());
+    bool side_max = bp_posx_ini.side();
+
+    block_pos bp_posx;
+    range_it rng_posx = rng_max;
+    bool side_posx = side_max;
+
+    for (size_t posx = posx_ini + 1; posx <= range_input.last; ++posx)
+    {
+        bool final = (posx == range_input.last);
+        bool mergeable = false;
+
+        if (not final)
+        {
+            bp_posx = bk.index[posx];
+            rng_posx = bk.get_range(bp_posx.pos());
+            side_posx = bp_posx.side();
+            mergeable = (side_max != side_posx
+                            and is_mergeable(rng_max, rng_posx, bk.cmp));
+        };
+        if (bk.error) return;
+        if (final or not mergeable)
+        {
+            range_pos rp_final(posx_ini, posx);
+            if (rp_final.size() > 1)
+            {
+                if (rp_final.size() > Group_size)
+                {
+                    function_cut_range(rp_final, counter, bk.error);
+                }
+                else
+                {
+                    function_merge_range_pos(rp_final, counter, bk.error);
+                };
+            };
+            posx_ini = posx;
+            if (not final)
+            {
+                rng_max = rng_posx;
+                side_max = side_posx;
+            };
+        }
+        else
+        {
+            if (bk.cmp(*(rng_max.back()), *(rng_posx.back())))
+            {
+                rng_max = rng_posx;
+                side_max = side_posx;
+            };
+        };
+    };
+    bk.exec(counter);
+}
+COMMENT:
+/// @brief from a big range of positions of blocks in the index. Examine which
+///        are mergeable, and generate a couple of ranges for to be merged.
+///        With the ranges obtained generate function_t elements and are
+///        inserted in the concurrent stack.
+///        When the range obtained is smaller than Group_size, generate a
+///        function_t calling to merge_range_pos, when is greater, generate a
+///        function_t calling to cut_range
+/// @param rpos range_input : range of the position in the index, where must
+///                           extract the ranges to merge
+
+
+
+CODE:
+bool compare_block (block< Block_size, Iter_t > block1,
+                    block< Block_size, Iter_t > block2,
+                    Compare cmp = Compare ( ))
+{
+    return cmp (*block1.first, *block2.first);
+};
+COMMENT:
+/// @brief compare two blocks using the content of the pointed by first
+/// @param block1 : first block to compare
+/// @param block2 : second block to compare
+/// @param cmp : comparison operator
+
+
+
+CODE:
+::move_blocks(backbone_t &bkb) : bk(bkb)
+{
+    std::vector<std::vector<size_t> > vsequence;
+    vsequence.reserve(bk.index.size() >> 1);
+    std::vector<size_t> sequence;
+    atomic_t counter(0);
+
+    size_t pos_index_ini = 0, pos_index_src = 0, pos_index_dest = 0;
+    while (pos_index_ini < bk.index.size())
+    {
+        while (pos_index_ini < bk.index.size()
+                        and bk.index[pos_index_ini].pos() == pos_index_ini)
+        {
+            ++pos_index_ini;
+        };
+
+        if (pos_index_ini == bk.index.size()) break;
+
+        sequence.clear();
+        pos_index_src = pos_index_dest = pos_index_ini;
+        sequence.push_back(pos_index_ini);
+
+        while (bk.index[pos_index_dest].pos() != pos_index_ini)
+        {
+            pos_index_src = bk.index[pos_index_dest].pos();
+            sequence.push_back(pos_index_src);
+
+            bk.index[pos_index_dest].set_pos(pos_index_dest);
+            pos_index_dest = pos_index_src;
+        };
+
+        bk.index[pos_index_dest].set_pos(pos_index_dest);
+        vsequence.push_back(sequence);
+
+        if (sequence.size() < Group_size)
+        {
+            function_move_sequence(vsequence.back(), counter, bk.error);
+        }
+        else
+        {
+            function_move_long_sequence(vsequence.back(), counter, bk.error);
+        };
+    };
+    bk.exec(counter);
+}
+COMMENT:
+/// @brief constructor of the class for to move the blocks to their true
+///        position obtained from the index
+/// @param bkb : backbone with the index and the blocks
+
+
+
+CODE:
+::move_sequence(const std::vector<size_t> &init_sequence)
+{
+    range_buf rbuf = bk.get_range_buf();
+    size_t pos_range2 = init_sequence[0];
+
+    range_it range2 = bk.get_range(pos_range2);
+    move_forward(rbuf, range2);
+
+    for (size_t i = 1; i < init_sequence.size(); ++i)
+    {
+        pos_range2 = init_sequence[i];
+        range_it range1(range2);
+        range2 = bk.get_range(pos_range2);
+        move_forward(range1, range2);
+    };
+    move_forward(range2, rbuf);
+};
+COMMENT:
+/// @brief move the blocks, following the positions of the init_sequence
+/// @param init_sequence : vector with the positions from and where move the
+///                        blocks
+
+
+
+CODE:
+::move_long_sequence(const std::vector<size_t> &init_sequence)
+{
+    if (init_sequence.size() < Group_size) return move_sequence(init_sequence);
+
+    size_t npart = (init_sequence.size() + Group_size - 1) / Group_size;
+    size_t size_part = init_sequence.size() / npart;
+    atomic_t son_counter(0);
+
+    std::vector<size_t> sequence;
+    sequence.reserve(size_part);
+
+    std::vector<size_t> index_seq;
+    index_seq.reserve(npart);
+
+    auto it_pos = init_sequence.begin();
+    for (size_t i = 0; i < (npart - 1); ++i, it_pos += size_part)
+    {
+        sequence.assign(it_pos, it_pos + size_part);
+        index_seq.emplace_back(*(it_pos + size_part - 1));
+        function_move_sequence(sequence, son_counter, bk.error);
+    };
+
+    sequence.assign(it_pos, init_sequence.end());
+    index_seq.emplace_back(init_sequence.back());
+    function_move_sequence(sequence, son_counter, bk.error);
+
+    bk.exec(son_counter);
+    if (bk.error) return;
+    move_long_sequence(index_seq);
+}
+COMMENT:
+/// @brief move the blocks, following the positions of the init_sequence.
+///        if the sequence is greater than Group_size, it is divided in small
+///        sequences, creating function_t elements, for to be inserted in the
+///        concurrent stack
+/// @param init_sequence : vector with the positions from and where move the
+///                        blocks
+
+
+
+CODE:
+::parallel_sort(backbone_t &bkbn, Iter_t first, Iter_t last)
+ : bk(bkbn), counter(0)
+{
+    assert((last - first) >= 0);
+    size_t nelem = size_t(last - first);
+
+    //------------------- check if sort --------------------------------------
+    bool sorted = true;
+    for (Iter_t it1 = first, it2 = first + 1;
+         it2 != last and (sorted = not bk.cmp(*it2, *it1)); it1 = it2++);
+    if (sorted) return;
+
+    //------------------- check if reverse sort ---------------------------
+    sorted = true;
+    for (Iter_t it1 = first, it2 = first + 1;
+         it2 != last and (sorted = not bk.cmp(*it1, *it2)); it1 = it2++);
+
+    if (sorted)
+    {
+        size_t nelem2 = nelem >> 1;
+        Iter_t it1 = first, it2 = last - 1;
+        for (size_t i = 0; i < nelem2; ++i)
+            std::swap(*(it1++), *(it2--));
+        return;
+    };
+
+    //-------------------max_per_thread ---------------------------
+    uint32_t nbits_size = (nbits64(sizeof(value_t))) >> 1;
+    if (nbits_size > 5) nbits_size = 5;
+    max_per_thread = 1 << (18 - nbits_size);
+
+    uint32_t level = ((nbits64(nelem / max_per_thread)) * 3) / 2;
+
+    //---------------- check if only single thread -----------------------
+    if (nelem < (max_per_thread))
+    {
+        pdqsort(first, last, bk.cmp);
+        return;
+    };
+    if (not bk.error) divide_sort(first, last, level);
+
+    // wait until all the parts are finished
+    bk.exec(counter);
+};
+COMMENT:
+/// @brief constructor of the class
+/// @param [in] bkbn : backbone struct with all the information to sort
+/// @param [in] first : iterator to the first element to sort
+/// @param [in] last : iterator to the next element after the last
+
+
+
+CODE:
+::divide_sort(Iter_t first, Iter_t last, uint32_t level)
+{
+    //------------------- check if sort -----------------------------------
+    bool sorted = true;
+    for (Iter_t it1 = first, it2 = first + 1;
+         it2 != last and (sorted = not bk.cmp(*it2, *it1)); it1 = it2++);
+    if (sorted) return;
+
+    //---------------- check if finish the subdivision -------------------
+    size_t nelem = last - first;
+    if (level == 0 or nelem < (max_per_thread))
+    {
+        return pdqsort(first, last, bk.cmp);
+    };
+
+    //-------------------- pivoting  ----------------------------------
+    pivot9(first, last, bk.cmp);
+    const value_t &val = const_cast<value_t &>(*first);
+    Iter_t c_first = first + 1, c_last = last - 1;
+
+    while (bk.cmp(*c_first, val))   ++c_first;
+    while (bk.cmp(val, *c_last))    --c_last;
+
+    while (c_first < c_last)
+    {
+        std::swap(*(c_first++), *(c_last--));
+        while (bk.cmp(*c_first, val))
+            ++c_first;
+        while (bk.cmp(val, *c_last))
+            --c_last;
+    };
+
+    std::swap(*first, *c_last);
+
+    // insert  the work of the second half in the stack of works
+    function_divide_sort(c_first, last, level - 1, counter, bk.error);
+    if (bk.error) return;
+
+    // The first half is done by the same thread
+    function_divide_sort(first, c_last, level - 1, counter, bk.error);
+};
+COMMENT:
+/// @brief this function divide the data in two part, for to be sorted in
+///        a parallel mode
+/// @param first : iterator to the first element to sort
+/// @param last : iterator to the next element after the last
+/// @param level : level of depth before call to pdqsort
+
+
+
+CODE:
+::backbone (Iter_t first, Iter_t last, Compare comp)
+: global_range (first, last), cmp (comp), error (false)
+{
+    assert ((last - first) >= 0);
+    if (first == last) return; // nothing to do
+
+    nelem = size_t (last - first);
+    nblock = (nelem + Block_size - 1) / Block_size;
+    ntail = (nelem % Block_size);
+    index.reserve (nblock + 1);
+
+    for (size_t i = 0; i < nblock; ++i) index.emplace_back (block_pos (i));
+
+    range_tail.first =
+        (ntail == 0) ? last : (first + ((nblock - 1) * Block_size));
+    range_tail.last = last;
+};
+COMMENT:
+/// @brief constructor of the class
+/// @param first : iterator to the first element of the range to sort
+/// @param last : iterator after the last element to the range to sort
+/// @param comp : object for to compare two elements pointed by Iter_t
+///               iterators
+
+
+
+CODE:
+void backbone< Block_size, Iter_t, Compare >::exec (atomic_t &counter)
+{
+    function_t func_exec;
+    while (bscu::atomic_read (counter) != 0)
+    {
+        if (works.pop_move_back (func_exec)) func_exec ( );
+        else std::this_thread::yield ( );
+    };
+};
+COMMENT:
+/// @brief execute the function_t stored in works, until counter is zero
+/// @param counter : atomic counter. When 0 exits the function
+
+
+
+CODE:
+static void insert_sort (Iter_t first, Iter_t last,
+                         Compare comp = Compare())
+{
+    //--------------------------------------------------------------------
+    //                   DEFINITIONS
+    //--------------------------------------------------------------------
+    typedef value_iter< Iter_t > value_t;
+
+    if ((last - first) < 2) return;
+
+    for (Iter_t it_examine = first + 1; it_examine != last; ++it_examine)
+    {
+        value_t Aux = std::move (*it_examine);
+        Iter_t it_insertion = it_examine;
+
+        while (it_insertion != first and comp (Aux, *(it_insertion - 1)))
+        {
+            *it_insertion = std::move (*(it_insertion - 1));
+            --it_insertion;
+        };
+        *it_insertion = std::move (Aux);
+    };
+};
+COMMENT:
+/// @brief : Insertion sort algorithm
+/// @param first: iterator to the first element of the range
+/// @param last : iterator to the next element of the last in the range
+/// @param comp : object for to do the comparison between the elements
+/// @remarks This algorithm is O(N^2)
+
+
+
+CODE:
+BOOST_INTRUSIVE_FORCEINLINE bool priority_order(const T &t, const U &u)
+{  return t < u;  }
+COMMENT:
+/// @cond
+
+
+
+CODE:
+   BOOST_INTRUSIVE_FORCEINLINE bool operator()(const T &val, const T &val2) const
+   {
+      using adldft::priority_order;
+      return priority_order(val, val2);
+   }
+COMMENT:
+/// @endcond
+
+
+
+CODE:
+   BOOST_INTRUSIVE_FORCEINLINE insert_commit_data_t()
+      : link_left(false), node()
+   {}
+COMMENT:
+/// @cond
+
+
+
+CODE:
+   BOOST_INTRUSIVE_FORCEINLINE avltree_node_cloner(F f)
+      :  base_t(f)
+   {}
+COMMENT:
+/// @cond
+
+
+
+CODE:
+BOOST_INTRUSIVE_FORCEINLINE void destructor_impl(Hook &hook, detail::link_dispatch<safe_link>)
+{  //If this assertion raises, you might have destroyed an object
+   //while it was still inserted in a container that is alive.
+   //If so, remove the object from the container before destroying it.
+   (void)hook; BOOST_INTRUSIVE_SAFE_HOOK_DESTRUCTOR_ASSERT(!hook.is_linked());
+}
+COMMENT:
+/// @cond
+
+
+
+CODE:
+    ignore_oprimitive()
+    {}
+COMMENT:
+/// @brief a minimal output archive, which ignores any save
+/// This class implements a minimal output archive, probably an output archive
+/// archetype, doing nothing at any save. It's use, besides acting as an
+/// archetype is as a base class to implement special archives that ignore
+/// saving of most types
+
+
+
+CODE:
+    ignore_iprimitive()
+    {}
+COMMENT:
+/// @brief a minimal input archive, which ignores any load
+/// This class implements a minimal input archive, probably an input archive
+/// archetype, doing nothing at any load. It's use, besides acting as an
+/// archetype is as a base class to implement special archives that ignore
+/// loading of most types
+
+
+
+CODE:
+  bool operator()(std::type_info const* lhs, std::type_info const* rhs) const
+  {
+    return lhs->before(*rhs);
+  }
+COMMENT:
+/// @brief comparison function object for two std::type_info pointers
+/// is implemented using the before() member function of the std::type_info
+/// class
+
+
+
+CODE:
+   BOOST_CONTAINER_FORCEINLINE static bool equal_outer(const IA &l, const IA &r)
+   {  return allocator_traits<IA>::equal(l, r);  }
+COMMENT:
+/// @cond
+
+
+
+CODE:
+   BOOST_CONTAINER_FORCEINLINE static bool equal_outer(const IA1 &l, const IA2 &r)
+   {  return l == r;  }
+COMMENT:
+/// @cond
+
+
+
+CODE:
+BOOST_CONTAINER_FORCEINLINE bool operator==(const scoped_allocator_adaptor<OuterA1, BOOST_CONTAINER_SCOPEDALLOC_ALLINNER>& a
+                      ,const scoped_allocator_adaptor<OuterA2, BOOST_CONTAINER_SCOPEDALLOC_ALLINNER>& b)
+{
+   #if !defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) || defined(BOOST_CONTAINER_DOXYGEN_INVOKED)
+   const bool has_zero_inner = sizeof...(InnerAllocs) == 0u;
+   #else
+   const bool has_zero_inner = boost::container::dtl::is_same<P0, void>::value;
+   #endif
+   typedef scoped_allocator_operator_equal<has_zero_inner> equal_t;
+   return equal_t::equal_outer(a.outer_allocator(), b.outer_allocator()) &&
+          equal_t::equal_inner(a.inner_allocator(), b.inner_allocator());
+}
+COMMENT:
+/// @endcond
+
+
+
+CODE:
+    void fill(native_frame_ptr_t* begin, std::size_t size) {
+        if (!size) {
+            return;
+        }
+
+        impl_.reserve(static_cast<std::size_t>(size));
+        for (std::size_t i = 0; i < size; ++i) {
+            if (!begin[i]) {
+                return;
+            }
+            impl_.push_back(
+                frame(begin[i])
+            );
+        }
+    }
+COMMENT:
+/// @tparam Allocator Allocator to use during stack capture.
+
+
+
+CODE:
+    virtual ~format() {}
+COMMENT:
+/// @brief Results report formatter interface
+/// This is abstract interface for the report formatter used by results reporter routines.
+/// You can define a custom formatter by implementing this interface and setting the formatter using set_format function.
+/// This is usually done during test module initialization
+
+
+
+CODE:
+inline void             confirmation_report( test_unit_id id = INV_TEST_UNIT_ID )
+{ make_report( CONFIRMATION_REPORT, id ); }
+COMMENT:
+/// @brief Access to configured results reporter stream
+/// Use this stream to report additional information abut test module execution
+/// @}
+
+
+
+CODE:
+inline void             short_report( test_unit_id id = INV_TEST_UNIT_ID )
+{ make_report( SHORT_REPORT, id ); }
+COMMENT:
+/// @}
+
+
+
+CODE:
+inline void             detailed_report( test_unit_id id = INV_TEST_UNIT_ID )
+{ make_report( DETAILED_REPORT, id ); }
+COMMENT:
+/// @}
+
+
+
+CODE:
+    context_generator() : m_curr_frame( 0 ) {}
+COMMENT:
+/// @param[in]  tuf  fixture to remove
+/// @}
+/// @name Assertion/uncaught exception context support
+/// @{
+/// Context accessor
+
+
+
+CODE:
+inline UnitType&                    get( test_unit_id id )
+{
+    return static_cast<UnitType&>( get( id, static_cast<test_unit_type>(UnitType::type) ) );
+}
+COMMENT:
+/// @param[in]  tu_id    id of a test unit to locate
+/// @param[in]  tu_type  type of a test unit to locate
+/// @returns located test unit
+/// This function template provides access to a typed test unit by id
+/// It will throw if you specify incorrect test unit type
+/// @tparam UnitType compile time type of test unit to get (test_suite or test_case)
+/// @param  id id of test unit to get
+
+
+
+CODE:
+    unit_test_log_formatter()
+        : m_log_level(log_all_errors)
+    {}
+COMMENT:
+/// @see
+/// - boost::unit_test::test_observer for an indication of the calls of the test observer interface
+
+
+
+CODE:
+    framework_init_observer_t(): m_has_failure( false ) {}
+COMMENT:
+/// @brief Monitors the init of the framework
+/// This class collects the state of the init/termination of the unit test framework.
+/// @see boost::unit_test::test_observer
+
+
+
+CODE:
+make( T&& v )
+{
+    return monomorphic::singleton<T>( std::forward<T>( v ) );
+}
+COMMENT:
+/// @overload boost::unit_test::data::make()
+
+
+
+CODE:
+make( char* str )
+{
+    return monomorphic::singleton<char*>( std::move(str) );
+}
+COMMENT:
+/// @overload boost::unit_test::data::make
+
+
+
+CODE:
+make( char const* str )
+{
+    return monomorphic::singleton<char const*>( std::move(str) );
+}
+COMMENT:
+/// @overload boost::unit_test::data::make
+/// @overload boost::unit_test::data::make
+
+
+
+CODE:
+    delayed_dataset(Args... args)
+    : m_args(std::make_tuple(std::forward<Args>(args)...))
+    {}
+COMMENT:
+/// @c data::make.
+
+
+
+CODE:
+    delayed_dataset(delayed_dataset&& b) 
+    : m_args(std::move(b.m_args))
+    , m_dataset(std::move(b.m_dataset))
+    {}
+COMMENT:
+/// @c data::make.
+
+
+
+CODE:
+xrange( SampleType const& end_val )
+{
+    return monomorphic::ds_detail::make_xrange<SampleType>::_( data::end=end_val );
+}
+COMMENT:
+/// @overload boost::unit_test::data::xrange()
+
+
+
+CODE:
+xrange( SampleType const& end_val, Params const& params )
+{
+    return monomorphic::ds_detail::make_xrange<SampleType>::_(( params, data::end=end_val ));
+}
+COMMENT:
+/// @overload boost::unit_test::data::xrange()
+
+
+
+CODE:
+xrange( SampleType const& begin_val, SampleType const& end_val )
+{
+    return monomorphic::ds_detail::make_xrange<SampleType>::_((
+                data::begin=begin_val,
+                data::end=end_val ));
+}
+COMMENT:
+/// @overload boost::unit_test::data::xrange()
+
+
+
+CODE:
+xrange( SampleType const& begin_val, SampleType const& end_val, StepType const& step_val )
+{
+    return monomorphic::ds_detail::make_xrange<SampleType,StepType>::_(( 
+                data::begin=begin_val, 
+                data::end=end_val,
+                data::step=step_val ));
+}
+COMMENT:
+/// @overload boost::unit_test::data::xrange()
+
+
+
+CODE:
+random( SampleType begin, SampleType end )
+{
+    typedef monomorphic::random_t<SampleType> Gen;
+    typedef typename Gen::distr_type distr_type;
+    return monomorphic::generated_by<Gen>( Gen( distr_type(begin,end) ) );
+}
+COMMENT:
+/// @overload boost::unit_test::data::random()
+
+
+
+CODE:
+random( Params const& params )
+{
+    typedef typename ds_detail::random_gen_type<Params>::type Gen;
+    typedef typename Gen::distr_type distr_type;
+    typedef typename Gen::engine_type engine_type;
+
+    std::random_device rd;
+    engine_type E;
+//    engine_type E( rd );
+    if( params.has(engine) )
+        E = params[engine];
+
+    distr_type D;
+    if( params.has(distribution) )
+        D = params[distribution];
+
+    Gen G( std::move(E), std::move(D) );
+
+    if( params.has(seed) )
+        G.seed( params[seed] );
+
+    return monomorphic::generated_by<Gen>( std::move(G) );
+}
+COMMENT:
+/// @overload boost::unit_test::data::random()
+
+
+
+CODE:
+mismatch( InputIter1 first1, InputIter1 last1,
+          InputIter2 first2, InputIter2 last2 )
+{
+    while( first1 != last1 && first2 != last2 && *first1 == *first2 ) {
+        ++first1;
+        ++first2;
+    }
+
+    return std::pair<InputIter1, InputIter2>(first1, first2);
+}
+COMMENT:
+/// @brief this algorithm search through two collections for first mismatch position that get returned as a pair
+/// of iterators, first pointing to the mismatch position in first collection, second iterator in second one
+/// @param first1 - first collection begin iterator
+/// @param last1 - first collection end iterator
+/// @param first2 - second collection begin iterator
+/// @param last2 - second collection end iterator
+
+
+
+CODE:
+mismatch( InputIter1 first1, InputIter1 last1,
+          InputIter2 first2, InputIter2 last2,
+          Predicate pred )
+{
+    while( first1 != last1 && first2 != last2 && pred( *first1, *first2 ) ) {
+        ++first1;
+        ++first2;
+    }
+
+    return std::pair<InputIter1, InputIter2>(first1, first2);
+}
+COMMENT:
+/// @brief this algorithm search through two collections for first mismatch position that get returned as a pair
+/// of iterators, first pointing to the mismatch position in first collection, second iterator in second one. This algorithms
+/// uses supplied predicate for collection elements comparison
+/// @param first1 - first collection begin iterator
+/// @param last1 - first collection end iterator
+/// @param first2 - second collection begin iterator
+/// @param last2 - second collection end iterator
+/// @param pred - predicate to be used for search
+
+
+
+CODE:
+find_first_not_of( ForwardIterator1 first1, ForwardIterator1 last1,
+                   ForwardIterator2 first2, ForwardIterator2 last2 )
+{
+    while( first1 != last1 ) {
+        if( std::find( first2, last2, *first1 ) == last2 )
+            break;
+        ++first1;
+    }
+
+    return first1;
+}
+COMMENT:
+/// @brief this algorithm search through first collection for first element that does not belong a second one
+/// @param first1 - first collection begin iterator
+/// @param last1 - first collection end iterator
+/// @param first2 - second collection begin iterator
+/// @param last2 - second collection end iterator
+
+
+
+CODE:
+find_first_not_of( ForwardIterator1 first1, ForwardIterator1 last1,
+                   ForwardIterator2 first2, ForwardIterator2 last2,
+                   Predicate pred )
+{
+    while( first1 != last1 ) {
+        if( std::find_if( first2, last2, BOOST_TEST_BIND1ST( pred, *first1 ) ) == last2 )
+            break;
+        ++first1;
+    }
+
+    return first1;
+}
+COMMENT:
+/// @brief this algorithm search through first collection for first element that does not satisfy binary
+/// predicate in conjunction will any element in second collection
+/// @param first1 - first collection begin iterator
+/// @param last1 - first collection end iterator
+/// @param first2 - second collection begin iterator
+/// @param last2 - second collection end iterator
+/// @param pred - predicate to be used for search
+
+
+
+CODE:
+find_last_of( BidirectionalIterator1 first1, BidirectionalIterator1 last1,
+              ForwardIterator2 first2, ForwardIterator2 last2 )
+{
+    if( first1 == last1 || first2 == last2 )
+        return last1;
+
+    BidirectionalIterator1 it1 = last1;
+    while( --it1 != first1 && std::find( first2, last2, *it1 ) == last2 ) {}
+
+    return it1 == first1 && std::find( first2, last2, *it1 ) == last2 ? last1 : it1;
+}
+COMMENT:
+/// @brief this algorithm search through first collection for last element that belongs to a second one
+/// @param first1 - first collection begin iterator
+/// @param last1 - first collection end iterator
+/// @param first2 - second collection begin iterator
+/// @param last2 - second collection end iterator
+
+
+
+CODE:
+find_last_of( BidirectionalIterator1 first1, BidirectionalIterator1 last1,
+              ForwardIterator2 first2, ForwardIterator2 last2,
+              Predicate pred )
+{
+    if( first1 == last1 || first2 == last2 )
+        return last1;
+
+    BidirectionalIterator1 it1 = last1;
+    while( --it1 != first1 && std::find_if( first2, last2, BOOST_TEST_BIND1ST( pred, *it1 ) ) == last2 ) {}
+
+    return it1 == first1 && std::find_if( first2, last2, BOOST_TEST_BIND1ST( pred, *it1 ) ) == last2 ? last1 : it1;
+}
+COMMENT:
+/// @brief this algorithm search through first collection for last element that satisfy binary
+/// predicate in conjunction will at least one element in second collection
+/// @param first1 - first collection begin iterator
+/// @param last1 - first collection end iterator
+/// @param first2 - second collection begin iterator
+/// @param last2 - second collection end iterator
+/// @param pred - predicate to be used for search
+
+
+
+CODE:
+find_last_not_of( BidirectionalIterator1 first1, BidirectionalIterator1 last1,
+                  ForwardIterator2 first2, ForwardIterator2 last2 )
+{
+    if( first1 == last1 || first2 == last2 )
+        return last1;
+
+    BidirectionalIterator1 it1 = last1;
+    while( --it1 != first1 && std::find( first2, last2, *it1 ) != last2 ) {}
+
+    return it1 == first1 && std::find( first2, last2, *it1 ) != last2 ? last1 : it1;
+}
+COMMENT:
+/// @brief this algorithm search through first collection for last element that does not belong to a second one
+/// @param first1 - first collection begin iterator
+/// @param last1 - first collection end iterator
+/// @param first2 - second collection begin iterator
+/// @param last2 - second collection end iterator
+
+
+
+CODE:
+find_last_not_of( BidirectionalIterator1 first1, BidirectionalIterator1 last1,
+                  ForwardIterator2 first2, ForwardIterator2 last2,
+                  Predicate pred )
+{
+    if( first1 == last1 || first2 == last2 )
+        return last1;
+
+    BidirectionalIterator1 it1 = last1;
+    while( --it1 != first1 && std::find_if( first2, last2, BOOST_TEST_BIND1ST( pred, *it1 ) ) != last2 ) {}
+
+    return it1 == first1 && std::find_if( first2, last2, BOOST_TEST_BIND1ST( pred, *it1 ) ) == last2 ? last1 : it1;
+}
+COMMENT:
+/// @brief this algorithm search through first collection for last element that does not satisfy binary
+/// predicate in conjunction will any element in second collection
+/// @param first1 - first collection begin iterator
+/// @param last1 - first collection end iterator
+/// @param first2 - second collection begin iterator
+/// @param last2 - second collection end iterator
+/// @param pred - predicate to be used for search
+
+
+
+CODE:
+replace_all_occurrences_of( StringClass str,
+                            ForwardIterator first1, ForwardIterator last1,
+                            ForwardIterator first2, ForwardIterator last2)
+{
+    for(; first1 != last1 && first2 != last2; ++first1, ++first2) {
+        std::size_t found = str.find( *first1 );
+        while( found != StringClass::npos ) {
+            str.replace(found, first1->size(), *first2 );
+            found = str.find( *first1, found + first2->size() );
+        }
+    }
+
+    return str;
+}
+COMMENT:
+/// @brief This algorithm replaces all occurrences of a set of substrings by another substrings
+/// @param str - string of operation
+/// @param first1 - iterator to the beginning of the substrings to replace
+/// @param last1 - iterator to the end of the substrings to replace
+/// @param first2 - iterator to the beginning of the substrings to replace with
+/// @param last2 - iterator to the end of the substrings to replace with
+
+
+
+CODE:
+replace_all_occurrences_with_wildcards(
+    StringClass str,
+    ForwardIterator it_string_to_find, ForwardIterator it_string_to_find_end,
+    ForwardIterator it_string_to_replace, ForwardIterator it_string_to_replace_end)
+{
+    for(; it_string_to_find != it_string_to_find_end && it_string_to_replace != it_string_to_replace_end;
+        ++it_string_to_find, ++ it_string_to_replace) {
+
+        std::size_t wildcard_pos = it_string_to_find->find("*");
+        if(wildcard_pos == StringClass::npos) {
+            ForwardIterator it_to_find_current_end(it_string_to_find);
+            ForwardIterator it_to_replace_current_end(it_string_to_replace);
+            str = replace_all_occurrences_of(
+                str,
+                it_string_to_find, ++it_to_find_current_end,
+                it_string_to_replace, ++it_to_replace_current_end);
+            continue;
+        }
+
+        std::size_t wildcard_pos_replace = it_string_to_replace->find("*");
+
+        std::size_t found_begin = str.find( it_string_to_find->substr(0, wildcard_pos) );
+        while( found_begin != StringClass::npos ) {
+            std::size_t found_end = str.find(it_string_to_find->substr(wildcard_pos+1), found_begin + wildcard_pos + 1); // to simplify
+            if( found_end != StringClass::npos ) {
+
+                if( wildcard_pos_replace == StringClass::npos ) {
+                    StringClass replace_content = *it_string_to_replace;
+                    str.replace(
+                        found_begin,
+                        found_end + (it_string_to_find->size() - wildcard_pos - 1 ) - found_begin,
+                        replace_content);
+                } else {
+                    StringClass replace_content =
+                        it_string_to_replace->substr(0, wildcard_pos_replace)
+                        + str.substr(found_begin + wildcard_pos,
+                                     found_end - found_begin - wildcard_pos)
+                        + it_string_to_replace->substr(wildcard_pos_replace+1) ;
+                    str.replace(
+                        found_begin,
+                        found_end + (it_string_to_find->size() - wildcard_pos - 1 ) - found_begin,
+                        replace_content);
+
+                }
+            }
+
+            // may adapt the restart to the replacement and be more efficient
+            found_begin = str.find( it_string_to_find->substr(0, wildcard_pos), found_begin + 1 );
+       }
+    }
+
+    return str;
+}
+COMMENT:
+/// @param it_string_to_replace - iterator to the beginning of the substrings to replace with
+/// @param it_string_to_replace_end - iterator to the end of the substrings to replace with
+/// The wildcard is the symbol '*'. Only a unique wildcard per string is supported. The replacement
+/// string may also contain a wildcard, in which case it is considered as a placeholder to the content
+/// of the wildcard in the source string.
+/// Example:
+/// - In order to replace the occurrences of @c 'time=\"some-variable-value\"' to a constant string,
+///   one may use @c 'time=\"*\"' as the string to search for, and 'time=\"0.0\"' as the replacement string.
+/// - In order to replace the occurrences of 'file.cpp(XX)' per 'file.cpp:XX', where XX is a variable to keep,
+///   on may use @c 'file.cpp(*)' as the string to search for, and 'file.cpp:*' as the replacement string.
+
+
+
+CODE:
+bind_cancellation_slot(const CancellationSlot& s, BOOST_ASIO_MOVE_ARG(T) t)
+{
+  return cancellation_slot_binder<
+    typename decay<T>::type, CancellationSlot>(
+      s, BOOST_ASIO_MOVE_CAST(T)(t));
+}
+COMMENT:
+/// @c CancellationSlot.
+
+
+
+CODE:
+bind_allocator(const Allocator& s, BOOST_ASIO_MOVE_ARG(T) t)
+{
+  return allocator_binder<
+    typename decay<T>::type, Allocator>(
+      s, BOOST_ASIO_MOVE_CAST(T)(t));
+}
+COMMENT:
+/// @c Allocator.
+
+
+
+CODE:
+BOOST_AUTO_TEST_CASE( test_seed_with_singleton )
+{
+    BOOST_TEST( (data::ds_detail::seed{} ->* 1).size() == 1 );
+
+    struct TT {};
+    BOOST_TEST( (data::ds_detail::seed{} ->* TT{}).size() == 1 );
+
+    int arr[] = {1,2,3};
+    BOOST_TEST( (data::ds_detail::seed{} ->* arr).size() == 3 );
+}
+COMMENT:
+/// @file
+/// Tests C array based dataset
+
+
+
+CODE:
+    A(int i_) : i(i_) {}
+COMMENT:
+/// @brief string_cast unit test
 
 
 

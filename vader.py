@@ -59,11 +59,9 @@ def main(
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"))  as progress_parsing:
         progress_parsing.add_task(description="Extracting Functions", total=None)
         progress_parsing.add_task(description="Parsing Functions", total=None)
-        code_info_df = core_extractor.extractor(directory, ignoreDocumented = ignore_documented, removeCppSignatures = remove_cpp_signatures) if not create_ml_dataset else core_extractor.extractor(directory, ignoreDocumented = ignore_documented, removeCppSignatures = remove_cpp_signatures)
-        # print(code_info_df)
+        code_info_df = core_extractor.extractor(directory, ignoreDocumented = ignore_documented, removeCppSignatures = remove_cpp_signatures)
     parsed_dict = parse_df_to_dict(code_info_df) if not create_ml_dataset else code_info_df.loc[:,"Code"]
-    # print(parsed_dict)
-
+    
     pprint(f"Found [bold green]{code_info_df.shape[0]}[/bold green] functions in [bold green]{len(parsed_dict.keys())}[/bold green] files")
 
     if(create_ml_dataset):
@@ -74,24 +72,27 @@ def main(
         with open("ML_CodeComments.txt", "w") as txt_file:
             for key in track(parsed_dict.keys(), "Saving Code/Comment pairs..."):
                 filet = funcnames[curFunc][ : funcnames[curFunc].find("_", funcnames[curFunc].rfind("."))]
-                # print(funcnames[curFunc])
                 with open(filet, "r") as curFile:
-                    # fromLineNum = list(itertools.islice(curFile, (max(linenums[curFunc] - 14, 0))))
-                    fromLineNum = curFile.readlines()[(max(linenums[curFunc] - 14, 0)) : linenums[curFunc]]
                     comment = ""
-                    breakNext = False
-                    for line in fromLineNum:
-                        if line[0:3] == "///":
-                            comment += line
-                            breakNext = True
-                        elif breakNext == True:
-                            break
-                if(comment != ""):
-                    txt_file.write("CODE:\n")
-                    txt_file.write(parsed_dict[key])
-                    txt_file.write("COMMENT:\n")
-                    txt_file.write(comment)
-                    txt_file.write("\n\n\n")
+                    try:
+                        fromLineNum = curFile.readlines()[(max(linenums[curFunc] - 14, 0)) : linenums[curFunc]]
+                        readd = False
+                        for line in fromLineNum:
+                            if line[0:5] == "/// @":
+                                readd = True
+                            if line[0:4] == "/// " and readd == True:
+                                comment += line
+                                  
+                        if(comment != ""):
+                            txt_file.write("CODE:\n")
+                            txt_file.write(parsed_dict[key])
+                            txt_file.write("COMMENT:\n")
+                            txt_file.write(comment)
+                            txt_file.write("\n\n\n")
+
+                    except:
+                        print("Couldn't parse " + filet + ", encoding may not be utf-8")
+
                 curFunc += 1
         return
 
@@ -101,8 +102,8 @@ def main(
 
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"))  as progress_model:
         progress_model.add_task(description="Setting up Model (this may take a while)", total=None)
-        tokenizer = RobertaTokenizer.from_pretrained('Salesforce/codet5-large')
-        model = T5ForConditionalGeneration.from_pretrained('Salesforce/codet5-large')
+        tokenizer = RobertaTokenizer.from_pretrained('Salesforce/codet5-base-multi-sum')
+        model = T5ForConditionalGeneration.from_pretrained('Salesforce/codet5-base-multi-sum')
     
 
     # Inference
