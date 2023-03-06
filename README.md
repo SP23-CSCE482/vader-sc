@@ -2,7 +2,7 @@
 This is the repository for VADER-SC - A project to increase source code readability. 
 
 ## Usage
-To parse directory run ```vader.py /path/to/directory```
+To parse directory run ```python3 vader.py /path/to/directory```
 
 ## Local Setup 
 * If you don't have ctags installed (which is a system requirement to run the philips parser), run ```sudo apt-get install exuberant-ctags```

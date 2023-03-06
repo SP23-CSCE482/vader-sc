@@ -15,7 +15,7 @@ import extractor_log as cl
 LOG = cl.get_logger()
 DELTA_BODY = []
 UID_LIST = []
-FILE_TYPE = ["JAVA", "CPP", "C", "CS", "PY", "TS", "JS"]  # pragma: no mutate
+FILE_TYPE = ["JAVA", "CPP", "C", "CS", "PY", "TS", "JS", "HPP"]  # pragma: no mutate
 
 
 def get_file_names(dir_path):
@@ -77,7 +77,7 @@ def get_function_names(file_names, ignoreDocumented):
         @return
         This function returns function/method names and line numbers of all the given files"""
     file_ext = file_names.split('.')[-1].upper()
-    find = "function" if file_ext.upper() == "CPP" or file_ext.upper() == "C" \
+    find = "function" if file_ext.upper() == "CPP" or file_ext.upper() == "C" or file_ext.upper() == "HPP" \
         else ["member", "function", "class"] if file_ext.upper() == "PY" else "method"  # pragma: no mutate
     proc = run_ctags_cmd(file_ext, file_names, find)
     process = str(proc.stdout.read(), 'utf-8')  # pragma: no mutate
