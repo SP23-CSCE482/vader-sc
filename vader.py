@@ -81,7 +81,8 @@ def main(
             input_ids = tokenizer(code_info["code"][:512], return_tensors="pt").input_ids
             generated_ids = model.generate(input_ids, max_length=512)
             parsed_dict[key][index]["generated_comment"] = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
-    
+            if(verbose): pprint(f"Comment generated for " + key)  
+
     # Saving File
     for key in track(parsed_dict.keys(), "Saving Comments..."):
         parsed_dict[key].sort(key=lambda x: x["line_no"])
@@ -105,7 +106,7 @@ def main(
                             mod_file.write(og_file.readline())
                             line_counter +=1
                     mod_file.write(og_file.read())
-                    if(verbose): pprint(f"Comments created and inserted for " + key)
+                    if(verbose): pprint(f"Comment inserted for " + key)
             if(overwrite_files):
                 os.remove(key)
                 os.rename(mod_file_name, key)
