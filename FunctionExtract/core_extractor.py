@@ -707,7 +707,7 @@ def initialize_values(delta, annot, path_loc, report_folder):
 
 
 def extractor(path_loc, annot=None, delta=None, functionstartwith=None, report_folder=None, exclude=None, ignoreDocumented=None,
-              removeCppSignatures = None, non_recursive = None):
+              removeCppSignatures = None):
     """ Function that initiates the overall process of extracting function/method definitions from the files
         @parameters
         path_loc: directory path of the repository
@@ -732,8 +732,6 @@ def extractor(path_loc, annot=None, delta=None, functionstartwith=None, report_f
         if delta is not None:
             get_delta_lines(func_name, annot, delta)
         else:
-            if(non_recursive): 
-                if(func_name.count("/") > 1): continue
             functions, line_num = get_function_names(func_name, ignoreDocumented)
             if os.path.splitext(func_name)[1].upper() == ".PY":
                 code_list, line_nums = process_py_files(code_list,line_nums, line_num, func_name, annot, functionstartwith)

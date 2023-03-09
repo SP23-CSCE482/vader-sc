@@ -7,7 +7,6 @@ from pathlib import Path
 from rich import print as pprint, console
 from rich.progress import Progress, SpinnerColumn, TextColumn, track
 import pandas as pd
-import os
 
 
 def parse_df_to_dict(code_dataframe: pd.DataFrame):
@@ -20,6 +19,9 @@ def parse_df_to_dict(code_dataframe: pd.DataFrame):
     """
     parsed_data = {}
     for file_id, code, line in zip(code_dataframe["Uniq ID"], code_dataframe["Code"], code_dataframe["Line"]):
+        print("file_id", file_id)
+        print("code", code)
+        print("line", line)
         og_file_name = file_id[:file_id.find("_", file_id.rfind("."))]
         if og_file_name in parsed_data:
             parsed_data[og_file_name].append({"code":code, "line_no":line})
@@ -38,9 +40,7 @@ COMMENT_MAP = {
 def main(
         directory: Path = typer.Argument(..., help="Directory of Source code to Parse"),
         ignore_documented: bool = typer.Option(False, "--ignore-documented", help = "Default False; ignores documented functions"),
-        remove_cpp_signatures: bool = typer.Option(False, "--remove-cpp-signatures", help = "Default False; removes signatures of C++ functions before processing"),
-        overwrite_files: bool = typer.Option(False, "--overwrite-files", help = "Default False; overwrites original files with generated comments instead of creating new ones"),
-        non_recursive: bool = typer.Option(False, "--non-recursive", help = "Default False; only generate comments for files in immediate directory and not children directories")
+        remove_cpp_signatures: bool = typer.Option(False, "--remove-cpp-signatures", help = "Default False; removes signatures of C++ functions before processing")
         ):
     
     if not directory.is_dir():
@@ -57,7 +57,7 @@ def main(
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"))  as progress_parsing:
         progress_parsing.add_task(description="Extracting Functions", total=None)
         progress_parsing.add_task(description="Parsing Functions", total=None)
-        code_info_df = core_extractor.extractor(directory, ignoreDocumented = ignore_documented, removeCppSignatures = remove_cpp_signatures, non_recursive = non_recursive)
+        code_info_df = core_extractor.extractor(directory, ignoreDocumented = ignore_documented, removeCppSignatures = remove_cpp_signatures)
         parsed_dict = parse_df_to_dict(code_info_df)
 
     pprint(f"Found [bold green]{code_info_df.shape[0]}[/bold green] functions in [bold green]{len(parsed_dict.keys())}[/bold green] files")
@@ -68,9 +68,9 @@ def main(
     model = None
 
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"))  as progress_model:
-        progress_model.add_task(description="Setting up Model (This may take a while)", total=None)
+        progress_model.add_task(description="Setting up Model", total=None)
         tokenizer = RobertaTokenizer.from_pretrained('Salesforce/codet5-base-multi-sum')
-        model = T5ForConditionalGeneration.from_pretrained('.')
+        model = T5ForConditionalGeneration.from_pretrained('Salesforce/codet5-base-multi-sum')
     
 
     # Inference
@@ -86,21 +86,17 @@ def main(
         mod_file_name = key[:key.rfind(".")] + "_mod" + key[key.rfind("."):]
         line_counter = 1
         array_counter = 0
-        if (os.path.isfile(key)):
-            with open(key, "r") as og_file:
-                with open(mod_file_name, "w") as mod_file:
-                    while(array_counter != len(parsed_dict[key])):
-                        file_ending = Path(key).suffix.upper()
-                        if(parsed_dict[key][array_counter]["line_no"] == line_counter):
-                            mod_file.write(f"{COMMENT_MAP[file_ending]} Generated: {parsed_dict[key][array_counter]['generated_comment']}\n")
-                            array_counter +=1
-                        else:
-                            mod_file.write(og_file.readline())
-                            line_counter +=1
-                    mod_file.write(og_file.read())
-            if(overwrite_files):
-                os.remove(key)
-                os.rename(mod_file_name, key)
+        with open(key, "r") as og_file:
+            with open(mod_file_name, "w") as mod_file:
+                while(array_counter != len(parsed_dict[key])):
+                    file_ending = Path(key).suffix.upper()
+                    if(parsed_dict[key][array_counter]["line_no"] == line_counter):
+                        mod_file.write(f"{COMMENT_MAP[file_ending]} Generated: {parsed_dict[key][array_counter]['generated_comment']}\n")
+                        array_counter +=1
+                    else:
+                        mod_file.write(og_file.readline())
+                        line_counter +=1
+                mod_file.write(og_file.read())
     
     pprint(f"Created [bold green]{len(parsed_dict)}[/bold green] files")
 
