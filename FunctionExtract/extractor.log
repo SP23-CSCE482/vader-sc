@@ -1401,3 +1401,386 @@
 2023-02-15 05:37:53,407 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/config.json HTTP/1.1" 200 0
 2023-02-15 05:37:55,603 Starting new HTTPS connection (1): huggingface.co:443
 2023-02-15 05:37:55,802 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/generation_config.json HTTP/1.1" 404 0
+2023-03-10 13:21:42,667 Input repository path validated successfully
+2023-03-10 13:21:42,668 Input report folder path validated successfully
+2023-03-10 13:21:42,668 Input repository path validated successfully
+2023-03-10 13:21:42,668 Input report folder path validated successfully
+2023-03-10 13:21:42,668 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/Camera.cpp
+2023-03-10 13:21:42,752 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/threadSafeQueue.cpp
+2023-03-10 13:21:42,786 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/FastFourierTransforms.py
+2023-03-10 13:21:42,815 Extraction process took 0.002 minutes
+2023-03-10 13:21:42,816 3 vaild files has been analysed
+2023-03-10 13:21:42,920 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 13:21:43,483 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 13:22:41,934 Input repository path validated successfully
+2023-03-10 13:22:41,934 Input report folder path validated successfully
+2023-03-10 13:22:41,934 Input repository path validated successfully
+2023-03-10 13:22:41,934 Input report folder path validated successfully
+2023-03-10 13:22:41,934 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/Camera.cpp
+2023-03-10 13:22:41,968 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/threadSafeQueue.cpp
+2023-03-10 13:22:41,997 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/FastFourierTransforms.py
+2023-03-10 13:22:42,022 Extraction process took 0.001 minutes
+2023-03-10 13:22:42,056 3 vaild files has been analysed
+2023-03-10 13:22:42,070 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 13:22:42,474 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 13:29:12,020 Input repository path validated successfully
+2023-03-10 13:29:12,021 Input report folder path validated successfully
+2023-03-10 13:29:12,021 Input repository path validated successfully
+2023-03-10 13:29:12,021 Input report folder path validated successfully
+2023-03-10 13:29:12,021 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/threadSafeQueue_mod.cpp
+2023-03-10 13:29:12,062 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/Camera.cpp
+2023-03-10 13:29:12,090 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/Camera_mod.cpp
+2023-03-10 13:29:12,118 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 13:29:12,162 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/FastFourierTransforms_mod.py
+2023-03-10 13:29:12,189 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/threadSafeQueue.cpp
+2023-03-10 13:29:12,218 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/FastFourierTransforms.py
+2023-03-10 13:29:12,243 Extraction process took 0.004 minutes
+2023-03-10 13:29:12,244 7 vaild files has been analysed
+2023-03-10 13:29:12,299 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 13:29:12,741 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 13:32:01,301 Input repository path validated successfully
+2023-03-10 13:32:01,301 Input report folder path validated successfully
+2023-03-10 13:32:01,301 Input repository path validated successfully
+2023-03-10 13:32:01,301 Input report folder path validated successfully
+2023-03-10 13:32:01,301 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/threadSafeQueue_mod.cpp
+2023-03-10 13:32:01,339 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/threadSafeQueue_mod_mod.cpp
+2023-03-10 13:32:01,369 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/Camera.cpp
+2023-03-10 13:32:01,398 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/Camera_mod.cpp
+2023-03-10 13:32:01,444 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/FastFourierTransforms_mod_mod.py
+2023-03-10 13:32:01,473 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 13:32:01,501 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/FastFourierTransforms_mod.py
+2023-03-10 13:32:01,527 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/threadSafeQueue.cpp
+2023-03-10 13:32:01,557 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/FastFourierTransforms.py
+2023-03-10 13:32:01,585 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/Camera_mod_mod.cpp
+2023-03-10 13:32:01,614 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core_mod.py
+2023-03-10 13:32:01,642 Extraction process took 0.006 minutes
+2023-03-10 13:32:01,643 11 vaild files has been analysed
+2023-03-10 13:32:01,765 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 13:32:02,147 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 13:33:52,394 Input repository path validated successfully
+2023-03-10 13:33:52,394 Input report folder path validated successfully
+2023-03-10 13:33:52,395 Input repository path validated successfully
+2023-03-10 13:33:52,395 Input report folder path validated successfully
+2023-03-10 13:33:52,395 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/threadSafeQueue_mod.cpp
+2023-03-10 13:33:52,431 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/threadSafeQueue_mod_mod.cpp
+2023-03-10 13:33:52,460 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/Camera.cpp
+2023-03-10 13:33:52,487 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/Camera_mod.cpp
+2023-03-10 13:33:52,535 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/FastFourierTransforms_mod_mod.py
+2023-03-10 13:33:52,562 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 13:33:52,589 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/FastFourierTransforms_mod.py
+2023-03-10 13:33:52,613 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/threadSafeQueue.cpp
+2023-03-10 13:33:52,643 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/FastFourierTransforms.py
+2023-03-10 13:33:52,671 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/Camera_mod_mod.cpp
+2023-03-10 13:33:52,702 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core_mod.py
+2023-03-10 13:33:52,730 Extraction process took 0.006 minutes
+2023-03-10 13:33:52,731 11 vaild files has been analysed
+2023-03-10 13:33:52,901 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 13:33:53,275 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 13:35:13,438 Input repository path validated successfully
+2023-03-10 13:35:13,438 Input report folder path validated successfully
+2023-03-10 13:35:13,438 Input repository path validated successfully
+2023-03-10 13:35:13,438 Input report folder path validated successfully
+2023-03-10 13:35:13,438 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/threadSafeQueue_mod.cpp
+2023-03-10 13:35:13,484 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/threadSafeQueue_mod_mod.cpp
+2023-03-10 13:35:13,515 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/Camera.cpp
+2023-03-10 13:35:13,576 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/Camera_mod.cpp
+2023-03-10 13:35:13,608 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/Camera_mod_mod_mod.cpp
+2023-03-10 13:35:13,639 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/threadSafeQueue_mod_mod_mod.cpp
+2023-03-10 13:35:13,668 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/FastFourierTransforms_mod_mod.py
+2023-03-10 13:35:13,701 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 13:35:13,731 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/FastFourierTransforms_mod.py
+2023-03-10 13:35:13,764 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/threadSafeQueue.cpp
+2023-03-10 13:35:13,795 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/FastFourierTransforms_mod_mod_mod.py
+2023-03-10 13:35:13,827 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/FastFourierTransforms.py
+2023-03-10 13:35:13,856 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/Camera_mod_mod.cpp
+2023-03-10 13:35:13,885 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core_mod_mod.py
+2023-03-10 13:35:13,917 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core_mod.py
+2023-03-10 13:35:13,951 Extraction process took 0.009 minutes
+2023-03-10 13:35:13,952 15 vaild files has been analysed
+2023-03-10 13:35:14,007 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 13:47:20,029 Input repository path validated successfully
+2023-03-10 13:47:20,029 Input report folder path validated successfully
+2023-03-10 13:47:20,029 Input repository path validated successfully
+2023-03-10 13:47:20,030 Input report folder path validated successfully
+2023-03-10 13:47:20,030 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 13:47:20,071 Extraction process took 0.001 minutes
+2023-03-10 13:47:20,110 1 vaild files has been analysed
+2023-03-10 13:47:40,354 Input repository path validated successfully
+2023-03-10 13:47:40,354 Input report folder path validated successfully
+2023-03-10 13:47:40,354 Input repository path validated successfully
+2023-03-10 13:47:40,354 Input report folder path validated successfully
+2023-03-10 13:47:40,354 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 13:47:40,397 Extraction process took 0.001 minutes
+2023-03-10 13:47:40,435 1 vaild files has been analysed
+2023-03-10 13:47:40,490 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 13:47:41,045 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 13:57:30,581 Input repository path validated successfully
+2023-03-10 13:57:30,581 Input report folder path validated successfully
+2023-03-10 13:57:30,581 Input repository path validated successfully
+2023-03-10 13:57:30,581 Input report folder path validated successfully
+2023-03-10 13:57:30,582 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 13:57:30,628 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core_mod.py
+2023-03-10 13:57:30,675 Extraction process took 0.002 minutes
+2023-03-10 13:57:30,675 2 vaild files has been analysed
+2023-03-10 13:57:30,778 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 13:57:31,591 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 14:37:35,537 Input repository path validated successfully
+2023-03-10 14:37:35,537 Input report folder path validated successfully
+2023-03-10 14:37:35,537 Input repository path validated successfully
+2023-03-10 14:37:35,537 Input report folder path validated successfully
+2023-03-10 14:37:35,537 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 14:37:35,605 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core_mod_mod.py
+2023-03-10 14:37:35,638 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core_mod.py
+2023-03-10 14:37:35,673 Extraction process took 0.002 minutes
+2023-03-10 14:37:35,674 3 vaild files has been analysed
+2023-03-10 14:37:35,862 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 14:37:36,593 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 14:42:20,933 Input repository path validated successfully
+2023-03-10 14:42:20,933 Input report folder path validated successfully
+2023-03-10 14:42:20,933 Input repository path validated successfully
+2023-03-10 14:42:20,933 Input report folder path validated successfully
+2023-03-10 14:42:20,933 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 14:42:20,977 Extraction process took 0.001 minutes
+2023-03-10 14:42:20,978 1 vaild files has been analysed
+2023-03-10 14:42:21,111 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 14:42:21,381 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 14:45:13,635 Input repository path validated successfully
+2023-03-10 14:45:13,635 Input report folder path validated successfully
+2023-03-10 14:45:13,635 Input repository path validated successfully
+2023-03-10 14:45:13,635 Input report folder path validated successfully
+2023-03-10 14:45:13,635 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 14:45:13,684 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core_mod.py
+2023-03-10 14:45:13,719 Extraction process took 0.001 minutes
+2023-03-10 14:45:13,720 2 vaild files has been analysed
+2023-03-10 14:45:13,816 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 14:45:14,284 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 14:50:18,099 Input repository path validated successfully
+2023-03-10 14:50:18,099 Input report folder path validated successfully
+2023-03-10 14:50:18,099 Input repository path validated successfully
+2023-03-10 14:50:18,099 Input report folder path validated successfully
+2023-03-10 14:50:18,099 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 14:50:18,148 Extraction process took 0.001 minutes
+2023-03-10 14:50:18,149 1 vaild files has been analysed
+2023-03-10 14:50:18,227 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 14:50:18,747 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 15:23:06,216 Input repository path validated successfully
+2023-03-10 15:23:06,216 Input report folder path validated successfully
+2023-03-10 15:23:06,217 Input repository path validated successfully
+2023-03-10 15:23:06,217 Input report folder path validated successfully
+2023-03-10 15:23:06,217 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 15:23:06,269 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core_mod.py
+2023-03-10 15:23:06,302 Extraction process took 0.001 minutes
+2023-03-10 15:23:06,303 2 vaild files has been analysed
+2023-03-10 15:23:52,406 Input repository path validated successfully
+2023-03-10 15:23:52,407 Input report folder path validated successfully
+2023-03-10 15:23:52,407 Input repository path validated successfully
+2023-03-10 15:23:52,407 Input report folder path validated successfully
+2023-03-10 15:23:52,407 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 15:23:52,459 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core_mod.py
+2023-03-10 15:23:52,496 Extraction process took 0.001 minutes
+2023-03-10 15:23:52,497 2 vaild files has been analysed
+2023-03-10 15:23:52,567 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 15:23:53,057 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 15:26:15,996 Input repository path validated successfully
+2023-03-10 15:26:15,996 Input report folder path validated successfully
+2023-03-10 15:26:15,996 Input repository path validated successfully
+2023-03-10 15:26:15,996 Input report folder path validated successfully
+2023-03-10 15:26:15,996 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 15:26:16,044 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core_mod_mod.py
+2023-03-10 15:26:16,078 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core_mod.py
+2023-03-10 15:26:16,112 Extraction process took 0.002 minutes
+2023-03-10 15:26:16,112 3 vaild files has been analysed
+2023-03-10 15:26:16,169 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 15:26:16,580 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 15:32:40,565 Input repository path validated successfully
+2023-03-10 15:32:40,565 Input report folder path validated successfully
+2023-03-10 15:32:40,565 Input repository path validated successfully
+2023-03-10 15:32:40,565 Input report folder path validated successfully
+2023-03-10 15:32:40,565 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 15:32:40,612 Extraction process took 0.001 minutes
+2023-03-10 15:32:40,612 1 vaild files has been analysed
+2023-03-10 15:32:40,874 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 15:32:41,222 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 15:37:10,166 Input repository path validated successfully
+2023-03-10 15:37:10,166 Input report folder path validated successfully
+2023-03-10 15:37:10,167 Input repository path validated successfully
+2023-03-10 15:37:10,167 Input report folder path validated successfully
+2023-03-10 15:37:10,167 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 15:37:10,211 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core_mod.py
+2023-03-10 15:37:10,244 Extraction process took 0.001 minutes
+2023-03-10 15:37:10,245 2 vaild files has been analysed
+2023-03-10 15:37:10,372 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 15:37:10,670 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 15:37:46,058 Input repository path validated successfully
+2023-03-10 15:37:46,058 Input report folder path validated successfully
+2023-03-10 15:37:46,058 Input repository path validated successfully
+2023-03-10 15:37:46,058 Input report folder path validated successfully
+2023-03-10 15:37:46,058 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 15:37:46,106 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core_mod.py
+2023-03-10 15:37:46,138 Extraction process took 0.001 minutes
+2023-03-10 15:37:46,139 2 vaild files has been analysed
+2023-03-10 15:37:46,167 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 15:37:46,531 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 15:39:25,659 Using default tokenizer.
+2023-03-10 15:39:25,810 rouge1 = 28.95, 95% confidence [25.40, 32.61]
+2023-03-10 15:39:25,810 rouge2 = 15.10, 95% confidence [11.37, 19.79]
+2023-03-10 15:39:25,810 rougeLsum = 28.54, 95% confidence [24.89, 32.28]
+2023-03-10 15:40:21,307 Input repository path validated successfully
+2023-03-10 15:40:21,307 Input report folder path validated successfully
+2023-03-10 15:40:21,307 Input repository path validated successfully
+2023-03-10 15:40:21,307 Input report folder path validated successfully
+2023-03-10 15:40:21,307 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 15:40:21,353 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core_mod_mod.py
+2023-03-10 15:40:21,386 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core_mod.py
+2023-03-10 15:40:21,418 Extraction process took 0.002 minutes
+2023-03-10 15:40:21,419 3 vaild files has been analysed
+2023-03-10 15:40:21,842 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 15:40:22,693 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 15:42:50,615 Using default tokenizer.
+2023-03-10 15:42:50,784 rouge1 = 27.52, 95% confidence [24.97, 30.62]
+2023-03-10 15:42:50,784 rouge2 = 12.42, 95% confidence [9.88, 15.56]
+2023-03-10 15:42:50,784 rougeLsum = 26.52, 95% confidence [23.86, 29.49]
+2023-03-10 15:44:27,192 Input repository path validated successfully
+2023-03-10 15:44:27,193 Input report folder path validated successfully
+2023-03-10 15:44:27,193 Input repository path validated successfully
+2023-03-10 15:44:27,193 Input report folder path validated successfully
+2023-03-10 15:44:27,193 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 15:44:27,236 Extraction process took 0.001 minutes
+2023-03-10 15:44:27,237 1 vaild files has been analysed
+2023-03-10 15:44:27,294 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 15:44:27,782 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 15:45:18,917 Using default tokenizer.
+2023-03-10 15:45:19,042 rouge1 = 32.49, 95% confidence [27.08, 38.35]
+2023-03-10 15:45:19,042 rouge2 = 19.47, 95% confidence [13.05, 25.63]
+2023-03-10 15:45:19,042 rougeLsum = 32.06, 95% confidence [26.91, 37.69]
+2023-03-10 15:46:22,309 Input repository path validated successfully
+2023-03-10 15:46:22,309 Input report folder path validated successfully
+2023-03-10 15:46:22,309 Input repository path validated successfully
+2023-03-10 15:46:22,309 Input report folder path validated successfully
+2023-03-10 15:46:22,309 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 15:46:22,353 Extraction process took 0.001 minutes
+2023-03-10 15:46:22,353 1 vaild files has been analysed
+2023-03-10 15:46:22,588 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 15:46:23,144 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 15:46:53,033 Input repository path validated successfully
+2023-03-10 15:46:53,033 Input report folder path validated successfully
+2023-03-10 15:46:53,033 Input repository path validated successfully
+2023-03-10 15:46:53,033 Input report folder path validated successfully
+2023-03-10 15:46:53,033 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 15:46:53,073 Extraction process took 0.001 minutes
+2023-03-10 15:46:53,074 1 vaild files has been analysed
+2023-03-10 15:46:53,100 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 15:46:54,011 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 15:47:44,716 Using default tokenizer.
+2023-03-10 15:47:44,840 rouge1 = 32.57, 95% confidence [27.31, 37.92]
+2023-03-10 15:47:44,840 rouge2 = 19.50, 95% confidence [13.80, 26.37]
+2023-03-10 15:47:44,840 rougeLsum = 32.21, 95% confidence [26.77, 37.45]
+2023-03-10 15:48:14,917 Input repository path validated successfully
+2023-03-10 15:48:14,917 Input report folder path validated successfully
+2023-03-10 15:48:14,917 Input repository path validated successfully
+2023-03-10 15:48:14,918 Input report folder path validated successfully
+2023-03-10 15:48:14,918 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 15:48:14,968 Extraction process took 0.001 minutes
+2023-03-10 15:48:14,968 1 vaild files has been analysed
+2023-03-10 15:48:15,115 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 15:48:15,597 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 15:49:06,979 Using default tokenizer.
+2023-03-10 15:49:07,103 rouge1 = 32.62, 95% confidence [26.85, 38.37]
+2023-03-10 15:49:07,103 rouge2 = 19.67, 95% confidence [13.29, 26.01]
+2023-03-10 15:49:07,103 rougeLsum = 32.19, 95% confidence [26.23, 38.11]
+2023-03-10 15:50:12,903 Input repository path validated successfully
+2023-03-10 15:50:12,903 Input report folder path validated successfully
+2023-03-10 15:50:12,903 Input repository path validated successfully
+2023-03-10 15:50:12,903 Input report folder path validated successfully
+2023-03-10 15:50:12,903 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 15:50:12,947 Extraction process took 0.001 minutes
+2023-03-10 15:50:12,947 1 vaild files has been analysed
+2023-03-10 15:50:13,094 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 15:50:13,540 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 15:50:50,510 Input repository path validated successfully
+2023-03-10 15:50:50,510 Input report folder path validated successfully
+2023-03-10 15:50:50,510 Input repository path validated successfully
+2023-03-10 15:50:50,510 Input report folder path validated successfully
+2023-03-10 15:50:50,510 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 15:50:50,556 Extraction process took 0.001 minutes
+2023-03-10 15:50:50,556 1 vaild files has been analysed
+2023-03-10 15:50:50,583 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 15:50:50,983 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 15:51:41,293 Using default tokenizer.
+2023-03-10 15:51:41,418 rouge1 = 32.53, 95% confidence [27.18, 38.16]
+2023-03-10 15:51:41,419 rouge2 = 19.81, 95% confidence [13.77, 27.10]
+2023-03-10 15:51:41,419 rougeLsum = 32.12, 95% confidence [26.98, 38.31]
+2023-03-10 15:54:12,722 Input repository path validated successfully
+2023-03-10 15:54:12,722 Input report folder path validated successfully
+2023-03-10 15:54:12,722 Input repository path validated successfully
+2023-03-10 15:54:12,722 Input report folder path validated successfully
+2023-03-10 15:54:12,722 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 15:54:12,765 Extraction process took 0.001 minutes
+2023-03-10 15:54:12,766 1 vaild files has been analysed
+2023-03-10 15:54:12,847 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 15:54:13,368 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 15:55:04,309 Using default tokenizer.
+2023-03-10 15:55:04,435 rouge1 = 32.69, 95% confidence [27.06, 37.92]
+2023-03-10 15:55:04,435 rouge2 = 19.79, 95% confidence [13.42, 26.47]
+2023-03-10 15:55:04,435 rougeLsum = 32.00, 95% confidence [26.61, 37.84]
+2023-03-10 15:59:36,873 Input repository path validated successfully
+2023-03-10 15:59:36,874 Input report folder path validated successfully
+2023-03-10 15:59:36,874 Input repository path validated successfully
+2023-03-10 15:59:36,874 Input report folder path validated successfully
+2023-03-10 15:59:36,874 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 15:59:36,919 Extraction process took 0.001 minutes
+2023-03-10 15:59:36,920 1 vaild files has been analysed
+2023-03-10 15:59:37,152 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 15:59:37,539 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 16:00:27,934 Using default tokenizer.
+2023-03-10 16:00:28,063 rouge1 = 32.54, 95% confidence [27.07, 38.45]
+2023-03-10 16:00:28,063 rouge2 = 19.66, 95% confidence [13.57, 26.26]
+2023-03-10 16:00:28,063 rougeLsum = 32.10, 95% confidence [26.85, 37.10]
+2023-03-10 16:01:10,110 Input repository path validated successfully
+2023-03-10 16:01:10,110 Input report folder path validated successfully
+2023-03-10 16:01:10,110 Input repository path validated successfully
+2023-03-10 16:01:10,110 Input report folder path validated successfully
+2023-03-10 16:01:10,111 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 16:01:10,155 Extraction process took 0.001 minutes
+2023-03-10 16:01:10,156 1 vaild files has been analysed
+2023-03-10 16:01:10,212 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 16:01:10,697 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 16:08:07,562 Input repository path validated successfully
+2023-03-10 16:08:07,562 Input report folder path validated successfully
+2023-03-10 16:08:07,562 Input repository path validated successfully
+2023-03-10 16:08:07,562 Input report folder path validated successfully
+2023-03-10 16:08:07,562 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 16:08:07,613 Extraction process took 0.001 minutes
+2023-03-10 16:08:07,614 1 vaild files has been analysed
+2023-03-10 16:08:07,783 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 16:08:08,137 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 16:08:58,882 Using default tokenizer.
+2023-03-10 16:08:59,008 rouge1 = 32.42, 95% confidence [26.94, 38.07]
+2023-03-10 16:08:59,008 rouge2 = 19.67, 95% confidence [13.63, 26.22]
+2023-03-10 16:08:59,008 rougeLsum = 32.19, 95% confidence [26.84, 37.65]
+2023-03-10 16:10:19,545 Input repository path validated successfully
+2023-03-10 16:10:19,545 Input report folder path validated successfully
+2023-03-10 16:10:19,545 Input repository path validated successfully
+2023-03-10 16:10:19,545 Input report folder path validated successfully
+2023-03-10 16:10:19,545 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 16:10:19,589 Extraction process took 0.001 minutes
+2023-03-10 16:10:19,590 1 vaild files has been analysed
+2023-03-10 16:10:19,692 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 16:10:20,249 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 16:11:10,849 Using default tokenizer.
+2023-03-10 16:11:10,974 rouge1 = 32.70, 95% confidence [27.13, 38.19]
+2023-03-10 16:11:10,974 rouge2 = 19.69, 95% confidence [13.32, 26.65]
+2023-03-10 16:11:10,974 rougeLsum = 32.35, 95% confidence [26.70, 37.84]
+2023-03-10 16:12:09,182 Input repository path validated successfully
+2023-03-10 16:12:09,182 Input report folder path validated successfully
+2023-03-10 16:12:09,182 Input repository path validated successfully
+2023-03-10 16:12:09,182 Input report folder path validated successfully
+2023-03-10 16:12:09,182 Extracting /Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code/core.py
+2023-03-10 16:12:09,236 Extraction process took 0.001 minutes
+2023-03-10 16:12:09,236 1 vaild files has been analysed
+2023-03-10 16:12:09,325 Starting new HTTPS connection (1): huggingface.co:443
+2023-03-10 16:12:09,733 https://huggingface.co:443 "HEAD /Salesforce/codet5-base-multi-sum/resolve/main/vocab.json HTTP/1.1" 200 0
+2023-03-10 16:12:59,872 Using default tokenizer.
+2023-03-10 16:12:59,997 rouge1 = 32.63, 95% confidence [27.23, 38.36]
+2023-03-10 16:12:59,997 rouge2 = 19.75, 95% confidence [13.70, 26.48]
+2023-03-10 16:12:59,997 rougeLsum = 32.22, 95% confidence [26.91, 37.93]

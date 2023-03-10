@@ -3,3 +3,9 @@ transformers
 typer
 rich
 pandas
+absl-py
+editdistance
+sacrebleu
+scipy
+scikit-learn
+rouge-score

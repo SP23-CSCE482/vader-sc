@@ -8,7 +8,9 @@ from rich import print as pprint, console
 from rich.progress import Progress, SpinnerColumn, TextColumn, track
 import pandas as pd
 import os
-
+import re
+import metrics
+import elvis_parser
 
 def parse_df_to_dict(code_dataframe: pd.DataFrame):
     """ Function Makes the Pandas DataFrame into something more parsable
@@ -33,24 +35,28 @@ COMMENT_MAP = {
     ".CPP": "//",
     ".JAVA": "//"
 }
-
-
 def main(
         directory: Path = typer.Argument(..., help="Directory of Source code to Parse"),
         ignore_documented: bool = typer.Option(False, "--ignore-documented", help = "Default False; ignores documented functions"),
         remove_cpp_signatures: bool = typer.Option(False, "--remove-cpp-signatures", help = "Default False; removes signatures of C++ functions before processing"),
-        overwrite_files: bool = typer.Option(False, "--overwrite-files", help = "Default False; overwrites original files with generated comments instead of creating new ones"),
+        overwrite_files: bool = typer.Option(True, "--overwrite-files", help = "Default False; overwrites original files with generated comments instead of creating new ones"),
         non_recursive: bool = typer.Option(False, "--non-recursive", help = "Default False; only generate comments for files in immediate directory and not children directories")
         ):
-    
+
     if not directory.is_dir():
         pprint("[bold red]Must be a directory[/bold red]")
         raise typer.Exit()
     # Code Extracting
     code_info_df = None
-
     # Transform Data
     parsed_dict = {}
+
+    #NEW NEW
+    #list that hold generated comments
+    generated_comments = []
+    #work in progress, will use to extract pre existing comments from files which are strings in the list
+    # #list that holds the original comments if they are the line above a function
+    # repo_files = elvis_parser.read_repo_files("/Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code")
 
     pprint(f"Generating comments for [bold green]{directory}[/bold green]")
 
@@ -62,6 +68,13 @@ def main(
 
     pprint(f"Found [bold green]{code_info_df.shape[0]}[/bold green] functions in [bold green]{len(parsed_dict.keys())}[/bold green] files")
 
+    #---------- NEW NEW ----------
+    #print(code_info_df)
+    #create csv file and output code_info_df to csv
+    code_info_df.to_csv('code_info_df.csv', index=False)
+    #create csv file and output docstrings list to csv
+    docstrings_extract = elvis_parser.extract_docstrings(code_info_df)
+
 
     # Retrieve Model
     tokenizer = None
@@ -71,7 +84,7 @@ def main(
         progress_model.add_task(description="Setting up Model (This may take a while)", total=None)
         tokenizer = RobertaTokenizer.from_pretrained('Salesforce/codet5-base-multi-sum')
         model = T5ForConditionalGeneration.from_pretrained('.')
-    
+
 
     # Inference
     for key in track(parsed_dict.keys(), "Generating Comments..."):
@@ -79,7 +92,32 @@ def main(
             input_ids = tokenizer(code_info["code"][:512], return_tensors="pt").input_ids
             generated_ids = model.generate(input_ids, max_length=512)
             parsed_dict[key][index]["generated_comment"] = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
-    
+
+            #---------- NEW NEW ----------
+            #if code has docstring, append generated comment to generated_comments list
+            if elvis_parser.has_docstring(code_info["code"]):
+                generated_comments.append(parsed_dict[key][index]["generated_comment"])
+
+    #---------- NEW NEW ----------
+    bleu_score = metrics.bleu(docstrings_extract, generated_comments)
+    print("BLEU score:", bleu_score["bleu"])
+
+    scores = metrics.rouge(docstrings_extract, generated_comments)
+    print(scores)
+
+    #---------- NEW NEW ----------
+    #print(generated_comments) line by line
+    for comment in generated_comments:
+        print(comment)
+    #issue
+    # accuracy = metrics.accuracy(docstrings_extract, generated_comments)
+    # print(accuracy)
+    print("Generated Comments Length:", len(generated_comments))
+    print("Docstrings Extract Length:", len(docstrings_extract))
+    #somehow the legnths are different by one in this test, need to look into this
+
+
+
     # Saving File
     for key in track(parsed_dict.keys(), "Saving Comments..."):
         parsed_dict[key].sort(key=lambda x: x["line_no"])
@@ -101,8 +139,8 @@ def main(
             if(overwrite_files):
                 os.remove(key)
                 os.rename(mod_file_name, key)
-    
-    pprint(f"Created [bold green]{len(parsed_dict)}[/bold green] files")
+
+
 
 
 if __name__ == '__main__':
