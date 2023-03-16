@@ -54,11 +54,13 @@ void Camera::TakePicture(Scene *scene){
 // Generated: 
 /*******************************************************************************
 * 
-*   This function checks if the queue is full.
-*   If it is, then it sets the finnishFlag to true.
+*   This function pops the first element from the queue.
 *
 * Inputs:
-*   finnishFlag - a flag to indicate if the queue is full
+*   inpElement - the element to pop from the queue
+*
+* Outputs:
+*   none
 *******************************************************************************/
 
 threadObject* ThreadsafeQueue::pop(){
