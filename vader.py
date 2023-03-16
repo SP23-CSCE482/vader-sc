@@ -44,14 +44,10 @@ def main(
         non_recursive: bool = typer.Option(False, "--non-recursive", help = "Default False; only generate comments for files in immediate directory and not children directories")
         ):
 
-    os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
     use_mps = False
     device = None
-    if torch.backends.mps.is_available():
-        device = torch.device('mps')
-        use_mps = True
-    else:
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     pprint(f"Using [bold green]{device}[/bold green] for inference")
     
@@ -74,8 +70,7 @@ def main(
         parsed_dict = parse_df_to_dict(code_info_df)
 
     pprint(f"Found [bold green]{code_info_df.shape[0]}[/bold green] functions in [bold green]{len(parsed_dict.keys())}[/bold green] files")
-
-
+    
     # Retrieve Model
     tokenizer = None
     model = None
@@ -85,18 +80,20 @@ def main(
         if use_mps:
             model = GPTJForCausalLM.from_pretrained('EleutherAI/gpt-j-6B', torch_dtype=torch.float16).to(device)
         else:
-            model = GPTJForCausalLM.from_pretrained('EleutherAI/gpt-j-6B').to(device)
+            model = GPTJForCausalLM.from_pretrained('EleutherAI/gpt-j-6B', torch_dtype=torch.float16).to(device)
         tokenizer = GPT2Tokenizer.from_pretrained('EleutherAI/gpt-j-6B')
     
 
     # Inference
     for key in track(parsed_dict.keys(), "Generating Comments..."):
         for index, code_info in enumerate(parsed_dict[key]):
-            input_ids = tokenizer.encode(multi_shot_primer+code_info["code"][:512]+"\n"+"COMMENT:\n", return_tensors="pt").to(device)
+            input_ids = tokenizer.encode(multi_shot_primer+code_info["code"][:1250]+"\n<--CODE_END 3-->\n<--COMMENT 3-->\n", return_tensors="pt").to(device)
             generated_ids = model.generate(input_ids, max_new_tokens=300)
-            tokenizer.decode(generated_ids[0][len(input_ids[0]):], skip_special_tokens=True)
-            generated_comment = tokenizer.decode(generated_ids[0][len(input_ids[0]):], skip_special_tokens=True)
-            parsed_dict[key][index]["generated_comment"] = generated_comment[:generated_comment.rfind('\n')]
+            generated_comment = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+            print(generated_comment)
+            generated_comment = generated_comment[generated_comment.find("<--COMMENT 3-->")+len("<--COMMENT 3-->"):generated_comment.find("<--COMMENT_END 3-->")]
+            parsed_dict[key][index]["generated_comment"] = generated_comment
+            del input_ids
     
     # Saving File
     for key in track(parsed_dict.keys(), "Saving Comments..."):

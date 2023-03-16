@@ -1,6 +1,5 @@
 multi_shot_primer = '''
-SESSION 1:
-CODE:
+<--CODE 1-->
 void getInput(string names[], int ages[], const int SIZE) {
     // for each student
     for (int i = 0; i < SIZE; i++) {
@@ -16,11 +15,11 @@ void getInput(string names[], int ages[], const int SIZE) {
         cin.ignore();
     }
 }
-CODE_END
+<--CODE_END 1-->
 
-COMMENT:
+<--COMMENT 1-->
 /*******************************************************************************
-* void getInput(string names[], int ages[], const int SIZE)
+* 
 *   Use a for loop to prompt the user for the name/age of each student. Store
 *   the information in the appropriate array.
 *
@@ -29,10 +28,9 @@ COMMENT:
 *   ages  - an integer array for storing the students' ages
 *   SIZE  - a constant integer that represents the size of the two arrays
 *******************************************************************************/
-CODE_END
+<--COMMENT_END 1-->
 
-SESSION 2:
-CODE:
+<--CODE 2-->
 ::is_sorted_backward(it_index itx_first, it_index itx_last)
 {
     size_t nblock = size_t(itx_last - itx_first);
@@ -64,12 +62,11 @@ CODE:
     };
     return true;
 };
-CODE_END
+<--CODE_END 2-->
 
-COMMENT:
-
+<--COMMENT 2-->
 /*******************************************************************************
-* bool is_sorted_backward(it_index itx_first, it_index itx_last)
+* 
 *   This function checks if a range of elements is sorted in a descending order.
 *   It uses the number_stable_sorted_backward function to determine the number
 *   of sorted elements in the range, and then uses the flat_stable_sort and
@@ -82,9 +79,8 @@ COMMENT:
 * Outputs:
 *   bool - true if the range is sorted in a descending order, false otherwise
 *******************************************************************************/
-CODE_END
+<--COMMENT_END 2-->
 
-SESSION 3:
-CODE:
+<--CODE 3-->
 
 '''
