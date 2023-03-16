@@ -1,14 +1,15 @@
 from FunctionExtract import core_extractor
-from transformers import RobertaTokenizer, T5ForConditionalGeneration
+from transformers import GPTJForCausalLM, GPT2Tokenizer
 import inspect
 import sys
 import typer
 from pathlib import Path
 from rich import print as pprint, console
 from rich.progress import Progress, SpinnerColumn, TextColumn, track
+from multishot import multi_shot_primer
 import pandas as pd
 import os
-
+import torch
 
 def parse_df_to_dict(code_dataframe: pd.DataFrame):
     """ Function Makes the Pandas DataFrame into something more parsable
@@ -42,6 +43,18 @@ def main(
         overwrite_files: bool = typer.Option(False, "--overwrite-files", help = "Default False; overwrites original files with generated comments instead of creating new ones"),
         non_recursive: bool = typer.Option(False, "--non-recursive", help = "Default False; only generate comments for files in immediate directory and not children directories")
         ):
+
+    os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+    use_mps = False
+    device = None
+    if torch.backends.mps.is_available():
+        device = torch.device('mps')
+        use_mps = True
+    else:
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    pprint(f"Using [bold green]{device}[/bold green] for inference")
+    
     
     if not directory.is_dir():
         pprint("[bold red]Must be a directory[/bold red]")
@@ -69,16 +82,21 @@ def main(
 
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"))  as progress_model:
         progress_model.add_task(description="Setting up Model (This may take a while)", total=None)
-        tokenizer = RobertaTokenizer.from_pretrained('Salesforce/codet5-base-multi-sum')
-        model = T5ForConditionalGeneration.from_pretrained('Salesforce/codet5-base-multi-sum')
+        if use_mps:
+            model = GPTJForCausalLM.from_pretrained('EleutherAI/gpt-j-6B', torch_dtype=torch.float16).to(device)
+        else:
+            model = GPTJForCausalLM.from_pretrained('EleutherAI/gpt-j-6B').to(device)
+        tokenizer = GPT2Tokenizer.from_pretrained('EleutherAI/gpt-j-6B')
     
 
     # Inference
     for key in track(parsed_dict.keys(), "Generating Comments..."):
         for index, code_info in enumerate(parsed_dict[key]):
-            input_ids = tokenizer(code_info["code"][:512], return_tensors="pt").input_ids
-            generated_ids = model.generate(input_ids, max_length=512)
-            parsed_dict[key][index]["generated_comment"] = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+            input_ids = tokenizer.encode(multi_shot_primer+code_info["code"][:512]+"\n"+"COMMENT:\n", return_tensors="pt").to(device)
+            generated_ids = model.generate(input_ids, max_new_tokens=300)
+            tokenizer.decode(generated_ids[0][len(input_ids[0]):], skip_special_tokens=True)
+            generated_comment = tokenizer.decode(generated_ids[0][len(input_ids[0]):], skip_special_tokens=True)
+            parsed_dict[key][index]["generated_comment"] = generated_comment[:generated_comment.rfind('\n')]
     
     # Saving File
     for key in track(parsed_dict.keys(), "Saving Comments..."):
