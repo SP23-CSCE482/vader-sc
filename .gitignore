@@ -1,0 +1,4 @@
+.github/
+.vscode/
+*.bin
+SC_Venv/
