@@ -18,4 +18,4 @@ This is the repository for VADER-SC - A project to increase source code readabil
 * cd into the directory vader-sc 
 
 * create a virtual environment, and install the requirements. 
-  * Run ```python3 -m venv SC_Venv && source SC_Venv/bin/activate && pip install -r requirements.txt -vvv```     
+  * Run ```python3 -m venv SC_Venv && source SC_Venv/bin/activate && python -m pip install --upgrade pip && pip install -r requirements.txt -vvv```     
