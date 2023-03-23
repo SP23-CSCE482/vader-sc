@@ -4,4 +4,3 @@ typer
 rich
 pandas
 pysimplegui
-tkinter

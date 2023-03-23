@@ -2,3 +2,4 @@
 .vscode/
 *.bin
 SC_Venv/
+*.log
