@@ -26,7 +26,8 @@ flags = [sg.Checkbox("ignore-documented", key="ignore-documented", default=False
             ]
 layout = [ [sg.Text('Directory of Source Code:'), sg.Input(key='-USER FOLDER-'), sg.FolderBrowse(target='-USER FOLDER-')],
            flags,
-           [sg.Button('Generate Comments', key = "GC")] ]
+           [sg.Button('Generate Comments', key = "GC")],
+           [sg.Output(size=(100,20))] ]
 
 # Create the Window
 window = sg.Window('VADER-SC GUI', layout)
