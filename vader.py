@@ -10,7 +10,7 @@ import pandas as pd
 import os
 import re
 import metrics
-import elvis_parser
+import testing_parser
 
 def parse_df_to_dict(code_dataframe: pd.DataFrame):
     """ Function Makes the Pandas DataFrame into something more parsable
@@ -56,7 +56,7 @@ def main(
     generated_comments = []
     #work in progress, will use to extract pre existing comments from files which are strings in the list
     # #list that holds the original comments if they are the line above a function
-    # repo_files = elvis_parser.read_repo_files("/Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code")
+    # repo_files = testing_parser.read_repo_files("/Users/dazbikboi/github-classroom/SP23-CSCE431/vader-sc/Sample_Code")
 
     pprint(f"Generating comments for [bold green]{directory}[/bold green]")
 
@@ -73,7 +73,7 @@ def main(
     #create csv file and output code_info_df to csv
     code_info_df.to_csv('code_info_df.csv', index=False)
     #create csv file and output docstrings list to csv
-    docstrings_extract = elvis_parser.extract_docstrings(code_info_df)
+    docstrings_extract = testing_parser.extract_docstrings(code_info_df)
 
 
     # Retrieve Model
@@ -83,10 +83,11 @@ def main(
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"))  as progress_model:
         progress_model.add_task(description="Setting up Model (This may take a while)", total=None)
         tokenizer = RobertaTokenizer.from_pretrained('Salesforce/codet5-base-multi-sum')
-        model = T5ForConditionalGeneration.from_pretrained('.')
+        model = T5ForConditionalGeneration.from_pretrained('Salesforce/codet5-base-multi-sum')
 
 
     # Inference
+    
     for key in track(parsed_dict.keys(), "Generating Comments..."):
         for index, code_info in enumerate(parsed_dict[key]):
             input_ids = tokenizer(code_info["code"][:512], return_tensors="pt").input_ids
@@ -95,7 +96,7 @@ def main(
 
             #---------- NEW NEW ----------
             #if code has docstring, append generated comment to generated_comments list
-            if elvis_parser.has_docstring(code_info["code"]):
+            if testing_parser.has_docstring(code_info["code"]):
                 generated_comments.append(parsed_dict[key][index]["generated_comment"])
 
     #---------- NEW NEW ----------
@@ -103,18 +104,23 @@ def main(
     print("BLEU score:", bleu_score["bleu"])
 
     scores = metrics.rouge(docstrings_extract, generated_comments)
-    print(scores)
+    print("Rouge score:", scores)
 
     #---------- NEW NEW ----------
     #print(generated_comments) line by line
-    for comment in generated_comments:
-        print(comment)
-    #issue
-    # accuracy = metrics.accuracy(docstrings_extract, generated_comments)
-    # print(accuracy)
     print("Generated Comments Length:", len(generated_comments))
     print("Docstrings Extract Length:", len(docstrings_extract))
-    #somehow the legnths are different by one in this test, need to look into this
+    print(type(generated_comments))
+    print(type(docstrings_extract))
+    for i in range(len(generated_comments)):
+        print("\n")
+        print(generated_comments[i])
+        print("^")
+        print(docstrings_extract[i])
+        print("---\n")
+    #issue
+    accuracy = metrics.accuracy(docstrings_extract, generated_comments)
+    print("Accuracy score:",accuracy) # Accuracy returns 0, as none of the strings are "exactly equal", which is what sklearn.metrics.accuracy_score measures out of the box. May be worth looking into the sklearn_metrics_wrapper in metrics.py
 
 
 

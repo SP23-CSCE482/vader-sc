@@ -48,12 +48,6 @@ def extract_docstrings(df):
                 match = re.search(r'"""(.*?)"""', code, re.DOTALL)
                 if match:
                     docstrings.append(match.group(1))
-                else:
-                    docstrings.append("")
-            else:
-                docstrings.append("")
-        else:
-            docstrings.append("")
     return docstrings
 
 #function takes a pandas data frame and returns a list of unique values in a column
