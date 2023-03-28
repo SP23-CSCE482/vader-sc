@@ -50,6 +50,11 @@ def main(
     if not directory.is_dir():
         pprint("[bold red]Must be a directory[/bold red]")
         raise typer.Exit()
+    
+    if(new_directories and overwrite_files):
+        pprint("The new-directories flag and the overwrite-files flags are mutually exclusive. [bold red]Please only specify one.[/bold red]")
+        raise typer.Exit()
+    
 
     # Use GPU
     device = None
@@ -105,7 +110,7 @@ def main(
         if(new_directories):
             if (not (os.path.isdir(key[:key.rfind("/")] + "/VaderSC_Commented"))):
                 os.mkdir(key[:key.rfind("/")] + "/VaderSC_Commented")
-            mod_file_name = key[:key.rfind("/")] + "/VaderSC_Commented" + key[key.rfind("/") : key.rfind(".")] + "_mod" + key[key.rfind("."):]
+            mod_file_name = key[:key.rfind("/")] + "/VaderSC_Commented" + key[key.rfind("/") :]
         else:
             mod_file_name = key[:key.rfind(".")] + "_mod" + key[key.rfind("."):]
         line_counter = 1
