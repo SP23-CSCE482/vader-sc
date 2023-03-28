@@ -44,7 +44,7 @@ def main(
         non_recursive: bool = typer.Option(False, "--non-recursive", help = "Default False; only generate comments for files in immediate directory and not children directories"),
         verbose: bool = typer.Option(False, "--verbose", help = "Default False; display verbose output during program execution"),
         new_directories: bool = typer.Option(False, "--new-directories", help = "Default False; creates new directories within which to put code with generated comments"),
-        use_cuda: bool = typer.Option(False, "--cuda", help="Default False; uses nvidia gpu for inference. Make sure appropriate drivers/libraries and resources.")
+        use_cuda: bool = typer.Option(False, "--cuda", help="Default False; uses nvidia gpu for inference. Make sure appropriate drivers/libraries are installed.")
         ):
     
     if not directory.is_dir():
