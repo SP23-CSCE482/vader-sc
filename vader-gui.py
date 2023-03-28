@@ -22,6 +22,7 @@ flags = [sg.Checkbox("ignore-documented", key="ignore-documented", default=False
             sg.Checkbox("overwrite-files", key="overwrite-files", default=False, tooltip="overwrites original files with generated comments instead of creating new ones"),
             sg.Checkbox("non-recursive", key="non-recursive", default=False, tooltip="only generate comments for files in immediate directory and not children directories"),
             sg.Checkbox("verbose", key="verbose", default=False, tooltip="display verbose output during program execution"),
+            sg.Checkbox("cuda", key="cuda", default=False, tooltip="uses NVIDIA GPU for inference. Make sure appropriate drivers/libraries are installed."),
             sg.Checkbox("new-directories", key="new-directories", default=False, tooltip="creates new directories within which to put code with generated comments")
             ]
 layout = [ [sg.Text('Directory of Source Code:'), sg.Input(key='-USER FOLDER-'), sg.FolderBrowse(target='-USER FOLDER-')],
