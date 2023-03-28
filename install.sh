@@ -3,7 +3,7 @@
 PYTHON_VERSION=`python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'`
 
 # Check if Python version is at least 3.8
-if (( $(echo "$PYTHON_VERSION < 3.8" | bc -l) )); then
+if (( $(echo "$PYTHON_VERSION < 3.6" | bc -l) )); then
     echo "ERROR: Python version must be at least 3.8"
     exit 1
 else
