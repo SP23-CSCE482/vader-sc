@@ -76,7 +76,7 @@ def main(
 
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), redirect_stdout=verbose)  as progress_model:
         progress_model.add_task(description="Setting up Model (This may take a while)", total=None)
-        tokenizer = RobertaTokenizer.from_pretrained('Salesforce/codet5-base-multi-sum')
+        tokenizer = RobertaTokenizer.from_pretrained('.')
         model = T5ForConditionalGeneration.from_pretrained('.')
     
 
