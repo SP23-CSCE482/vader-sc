@@ -42,7 +42,8 @@ def main(
         overwrite_files: bool = typer.Option(False, "--overwrite-files", help = "Default False; overwrites original files with generated comments instead of creating new ones"),
         non_recursive: bool = typer.Option(False, "--non-recursive", help = "Default False; only generate comments for files in immediate directory and not children directories"),
         verbose: bool = typer.Option(False, "--verbose", help = "Default False; display verbose output during program execution"),
-        new_directories: bool = typer.Option(False, "--new-directories", help = "Default False; creates new directories within which to put code with generated comments")
+        new_directories: bool = typer.Option(False, "--new-directories", help = "Default False; creates new directories within which to put code with generated comments"),
+        generate_similarity_scores: bool = typer.Option(False, "--generate_similarity_scores", help = "Generates similarity scores between source and generated comments")
         ):
     
     if not directory.is_dir():
@@ -52,6 +53,32 @@ def main(
     if(new_directories and overwrite_files):
         pprint("The new-directories flag and the overwrite-files flags are mutually exclusive. [bold red]Please only specify one.[/bold red]")
         raise typer.Exit()
+    dataset = {} #for similarity testing
+    if(generate_similarity_scores):
+        linenums = code_info_df.loc[:,"Line"]
+        funcnames = code_info_df.loc[:,"Uniq ID"]
+        curFunc = 0
+        for key in track(parsed_dict.keys(), "Finding Code-Comment Pairs for similarity testing"):
+            filet = funcnames[curFunc][ : funcnames[curFunc].find("_", funcnames[curFunc].rfind("."))]
+            with open(filet, "r") as curFile:
+                comment = ""
+                try:
+                    fromLineNum = curFile.readlines()[(max(linenums[curFunc] - 14, 0)) : linenums[curFunc]]
+                    readd = False
+                    for line in fromLineNum:
+                        if line[0:5] == "/// @":
+                            readd = True
+                        if line[0:4] == "/// " and readd == True:
+                            comment += line
+                                
+                    if(comment != ""):
+                        code = parsed_dict[key]
+                        dataset[key] = {"code":code,"original_comment":comment}
+                except:
+                    print("Couldn't parse " + filet + ", encoding may not be utf-8")
+
+            curFunc += 1
+        return
     
     # Code Extracting
     code_info_df = None
@@ -69,7 +96,6 @@ def main(
 
     pprint(f"Found [bold green]{code_info_df.shape[0]}[/bold green] functions in [bold green]{len(parsed_dict.keys())}[/bold green] files")
 
-
     # Retrieve Model
     tokenizer = None
     model = None
@@ -85,8 +111,12 @@ def main(
         for index, code_info in enumerate(parsed_dict[key]):
             input_ids = tokenizer(code_info["code"][:512], return_tensors="pt").input_ids
             generated_ids = model.generate(input_ids, max_length=512)
-            parsed_dict[key][index]["generated_comment"] = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+            generated_comment = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+            parsed_dict[key][index]["generated_comment"] = generated_comment
+            dataset[key]["generated_comment"] = generated_comment
             if(verbose): pprint(f"Comment generated for " + key)  
+
+    print(dataset)
 
     # Saving File
     for key in track(parsed_dict.keys(), "Saving Comments..."):
