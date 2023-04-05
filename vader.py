@@ -155,14 +155,14 @@ def main(
                     for line in fromLineNum:
                         if(extension == "cpp"):
                             if(len(line.strip()) > 0 and line.strip()[0:2]=="//" and len(line.strip()) >= 3):
-                                comment += line.strip()[2:] + "\n"
+                                comment = line.strip()[2:] + "\n" + comment
                                 drought = 0
                             else:
                                 drought += 1
                                 
                         if(extension == "py"):
                             if(len(line.strip()) > 0 and line.strip()[0]=="#" and len(line.strip()) >= 2):
-                                comment += line.strip()[1:] + "\n"
+                                comment += line.strip()[1:] + "\n" + comment
                                 drought = 0
                             else:
                                 drought += 1
