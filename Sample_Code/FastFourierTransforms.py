@@ -1,11 +1,14 @@
 import sympy as sp
 import numpy as np
 import math as mt
+
+#performs a fast fourier transform with the required coefficients
 def FastFourierTransform(Coeffs):
     if(not(mt.log(len(Coeffs), 2).is_integer())): #make sure length of input is a power of 2
         raise Exception("Please make your array length a power of 2")
     return FastFourierTransformHelper(Coeffs) #now we can let it actually compute
 
+#helper for the Fast Fourier Transform
 def FastFourierTransformHelper(Coeffs):
     n = len(Coeffs)
     if(n == 1):
@@ -21,12 +24,14 @@ def FastFourierTransformHelper(Coeffs):
         result[i + int(n/2)] = evenFunc[i] - rootOfUnity**i * oddFunc[i]  #two calculations for price of one baby
     return result
 
+#performs an inverse Fast Fourier Transform with the given coefficients
 def InverseFastFourierTransform(Coeffs):
     if(not(mt.log(len(Coeffs), 2).is_integer())): #make sure length of input is a power of 2
         raise Exception("Please make your array length a power of 2")
     partialRes = InverseFastFourierTransformHelper(Coeffs)
     return list(map(lambda x: x * (1/len(Coeffs)), partialRes)) #multiply every value by 1/n to account for inverse coefficient!
 
+#helper for the Inverse Fast Fourier Transform
 def InverseFastFourierTransformHelper(Coeffs):
     n = len(Coeffs)
     if(n == 1):

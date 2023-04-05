@@ -6,6 +6,8 @@
 
 class ThreadsafeQueue{
 public:
+
+	//Constructor for ThreadsafeQueue with default capacity of 500
 	ThreadsafeQueue(size_t capacity = 500){
 		maxCapacity = capacity; 
 		finnishFlag = new threadObject; 
@@ -26,6 +28,7 @@ private:
 	std::condition_variable notFullCond;
 };
 
+// returns a threadObject from the end of the ThreadsafeQueue in an atomic manner
 threadObject* ThreadsafeQueue::pop(){
 	std::unique_lock<std::mutex> localLock(globalMutex);
 	notEmptyCond.wait(localLock, [this] { 
@@ -45,6 +48,7 @@ threadObject* ThreadsafeQueue::pop(){
 	return inpElement;
 }
 
+//pushes inpElement onto the ThreadsafeQueue
 void ThreadsafeQueue::push(threadObject* inpElement){
 	std::unique_lock<std::mutex> localLock(globalMutex);
 	notFullCond.wait(localLock, [this] { 
@@ -55,10 +59,12 @@ void ThreadsafeQueue::push(threadObject* inpElement){
 	notEmptyCond.notify_one();
 }
 
+//returns true if the queue is empty
 bool ThreadsafeQueue::isEmpty(){
     return baseQueue.empty();
 }
 
+//sets the Full Stop to inp
 void ThreadsafeQueue::setFullStop(bool inp){
     fullStop = inp;
 }

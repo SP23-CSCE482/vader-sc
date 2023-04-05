@@ -1,8 +1,9 @@
 #include "Camera.h"
 
-
+//Destructor for the Camera Object
 Camera::~Camera(){}
 
+//Constructor for Camera Object
 Camera::Camera(int resolutionWidth, int resolutionHeight){
 	renderedImage = new float[resolutionWidth * resolutionHeight * 3];
 	memset(renderedImage, 0, sizeof(float) * resolutionWidth * resolutionHeight * 3);
@@ -10,6 +11,7 @@ Camera::Camera(int resolutionWidth, int resolutionHeight){
 	this->resolutionHeight = resolutionHeight;
 }
 
+// Takes a picture of a scene using the Camera
 void Camera::TakePicture(Scene *scene){
 	glm::vec3 G = eye - lookat;
 	glm::vec3 W = 1.0f / (length(G)) * G;
