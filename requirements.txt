@@ -4,3 +4,5 @@ typer
 rich
 pandas
 pysimplegui
+ntlk
+sentence_transformers

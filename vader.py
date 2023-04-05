@@ -8,7 +8,59 @@ from rich import print as pprint, console
 from rich.progress import Progress, SpinnerColumn, TextColumn, track
 import pandas as pd
 import os
+import traceback
+from nltk.translate.bleu_score import sentence_bleu
+import numpy as np
+from sentence_transformers import SentenceTransformer, util
 
+class Comparison():
+    def __init__(this, ref, gen):
+        this.ref = ref
+        this.gen = gen
+
+    def compareBLEU(this):
+        refsplit = this.ref.split(" ")
+        gensplit = this.gen.split(" ")
+        
+        score = sentence_bleu([refsplit],gensplit)
+        this.similarity = score
+        return(score)
+    
+    def compareHF(this):
+        model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+
+        ref_embedding = model.encode(this.ref, convert_to_tensor = True)
+        gen_embedding = model.encode(this.gen, convert_to_tensor = True)
+
+        return(util.pytorch_cos_sim(ref_embedding,gen_embedding)[0][0])
+
+class comparisonCorpus():
+    def __init__(this):
+        this.comparisonpairs = []
+
+    def addComparison(this,comparison):
+        this.comparisonpairs.append(comparison)
+    
+    def generateMetrics(this):
+        BLEUscores = []
+        HFscores = []
+        lengthAnomoly = []
+        
+        for comparison in this.comparisonpairs:
+            BLEUscores.append(comparison.compareBLEU())
+            HFscores.append(comparison.compareHF())
+            lengthAnomoly.append(np.abs(len(comparison.ref)-len(comparison.gen)))
+        
+        print("BLEU similarity metrics for dataset: ")
+        print("Mean: ",np.mean(BLEUscores))
+        print("Median: ",np.median(BLEUscores))
+        print("HF Sentence-Transformer similarity metrics for dataset: ")
+        print("Mean: ",np.mean(HFscores))
+        print("Median: ",np.median(HFscores))
+        print("Length anomoly metrics for dataset: ")
+        print("Mean: ",np.mean(lengthAnomoly))
+        print("Median: ",np.median(lengthAnomoly))
+        print("")
 
 def parse_df_to_dict(code_dataframe: pd.DataFrame):
     """ Function Makes the Pandas DataFrame into something more parsable
@@ -43,7 +95,7 @@ def main(
         non_recursive: bool = typer.Option(False, "--non-recursive", help = "Default False; only generate comments for files in immediate directory and not children directories"),
         verbose: bool = typer.Option(False, "--verbose", help = "Default False; display verbose output during program execution"),
         new_directories: bool = typer.Option(False, "--new-directories", help = "Default False; creates new directories within which to put code with generated comments"),
-        generate_similarity_scores: bool = typer.Option(False, "--generate_similarity_scores", help = "Generates similarity scores between source and generated comments")
+        generate_similarity_scores: bool = typer.Option(False, "--generate-similarity-scores", help = "Generates similarity scores between source and generated comments")
         ):
     
     if not directory.is_dir():
@@ -53,38 +105,13 @@ def main(
     if(new_directories and overwrite_files):
         pprint("The new-directories flag and the overwrite-files flags are mutually exclusive. [bold red]Please only specify one.[/bold red]")
         raise typer.Exit()
-    dataset = {} #for similarity testing
-    if(generate_similarity_scores):
-        linenums = code_info_df.loc[:,"Line"]
-        funcnames = code_info_df.loc[:,"Uniq ID"]
-        curFunc = 0
-        for key in track(parsed_dict.keys(), "Finding Code-Comment Pairs for similarity testing"):
-            filet = funcnames[curFunc][ : funcnames[curFunc].find("_", funcnames[curFunc].rfind("."))]
-            with open(filet, "r") as curFile:
-                comment = ""
-                try:
-                    fromLineNum = curFile.readlines()[(max(linenums[curFunc] - 14, 0)) : linenums[curFunc]]
-                    readd = False
-                    for line in fromLineNum:
-                        if line[0:5] == "/// @":
-                            readd = True
-                        if line[0:4] == "/// " and readd == True:
-                            comment += line
-                                
-                    if(comment != ""):
-                        code = parsed_dict[key]
-                        dataset[key] = {"code":code,"original_comment":comment}
-                except:
-                    print("Couldn't parse " + filet + ", encoding may not be utf-8")
 
-            curFunc += 1
-        return
-    
     # Code Extracting
     code_info_df = None
 
     # Transform Data
-    parsed_dict = {}
+    parsed_dict = {}  
+    
 
     pprint(f"Generating comments for [bold green]{directory}[/bold green]")
 
@@ -96,6 +123,71 @@ def main(
 
     pprint(f"Found [bold green]{code_info_df.shape[0]}[/bold green] functions in [bold green]{len(parsed_dict.keys())}[/bold green] files")
 
+    if(generate_similarity_scores):
+        linenums = code_info_df.loc[:,"Line"]
+        funcnames = code_info_df.loc[:,"Uniq ID"]
+        curFunc = 0
+        print(parsed_dict.keys())
+        print("funcnames",funcnames)
+        print("linenums",linenums)
+
+        
+
+        for key in track(parsed_dict.keys(), "Finding Code-Comment Pairs for similarity testing"):
+            function_index_within_file = 0
+            filet = funcnames[curFunc][ : funcnames[curFunc].find("_", funcnames[curFunc].rfind("."))]
+
+            print("funcname current: ",funcnames[curFunc])
+            
+            extension = filet.split(".")[1].lower()
+            print("filet: ",filet)
+            print("funcname without function: ",funcnames[curFunc].split(".")[0])
+            print("extension: ",extension)
+            while(curFunc < len(funcnames) and funcnames[curFunc].split(".")[0] == filet.split(".")[0]):
+                curFile = open(filet,"r")
+                comment = ""
+                print(curFunc)
+                print(function_index_within_file)
+                print(linenums[curFunc])
+                try:
+                    fromLineNum = curFile.readlines()[(max(linenums[curFunc] - 14, 0)) : linenums[curFunc]][::-1]
+                    drought = 0
+                    for line in fromLineNum:
+                        if(extension == "cpp"):
+                            if(len(line.strip()) > 0 and line.strip()[0:2]=="//" and len(line.strip()) >= 3):
+                                comment += line.strip()[2:] + "\n"
+                                drought = 0
+                            else:
+                                drought += 1
+                                
+                        if(extension == "py"):
+                            if(len(line.strip()) > 0 and line.strip()[0]=="#" and len(line.strip()) >= 2):
+                                comment += line.strip()[1:] + "\n"
+                                drought = 0
+                            else:
+                                drought += 1
+                        if drought >= 2:
+                            break
+        
+                    if(comment != ""):
+                        print("comment found:",comment)
+
+                        parsed_dict[key][function_index_within_file]["original_comment"] = comment
+                        
+                    else:
+                        print("No Comment found")
+                        print("source text: ","".join(fromLineNum))
+                        parsed_dict[key][function_index_within_file]["original_comment"] = ""
+                except Exception as e:
+                    print(e)
+                    traceback.print_exc()
+                    print("source text: ","".join(fromLineNum))
+                    
+                curFunc += 1
+                function_index_within_file += 1
+
+    print(parsed_dict)
+
     # Retrieve Model
     tokenizer = None
     model = None
@@ -105,7 +197,6 @@ def main(
         tokenizer = RobertaTokenizer.from_pretrained('.')
         model = T5ForConditionalGeneration.from_pretrained('.')
     
-
     # Inference
     for key in track(parsed_dict.keys(), "Generating Comments..."):
         for index, code_info in enumerate(parsed_dict[key]):
@@ -113,11 +204,9 @@ def main(
             generated_ids = model.generate(input_ids, max_length=512)
             generated_comment = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
             parsed_dict[key][index]["generated_comment"] = generated_comment
-            dataset[key]["generated_comment"] = generated_comment
-            if(verbose): pprint(f"Comment generated for " + key)  
+            if(verbose): pprint(f"Comment generated for " + key)
 
-    print(dataset)
-
+    print(parsed_dict)
     # Saving File
     for key in track(parsed_dict.keys(), "Saving Comments..."):
         parsed_dict[key].sort(key=lambda x: x["line_no"])
@@ -145,7 +234,16 @@ def main(
             if(overwrite_files):
                 os.remove(key)
                 os.rename(mod_file_name, key)
-    
+
+    if(generate_similarity_scores):
+        cc = comparisonCorpus()
+        for key in parsed_dict.keys():
+            for func in parsed_dict[key]:
+                cc.addComparison(Comparison(func["original_comment"],func["generated_comment"]))
+        
+        cc.generateMetrics()
+                
+
     pprint(f"Created [bold green]{len(parsed_dict)}[/bold green] files")
 
 
