@@ -1,3 +1,4 @@
+import torch
 from FunctionExtract import core_extractor
 from transformers import RobertaTokenizer, T5ForConditionalGeneration
 import inspect
@@ -12,41 +13,6 @@ import traceback
 from nltk.translate.bleu_score import sentence_bleu
 import numpy as np
 from sentence_transformers import SentenceTransformer, util
-
-class comparisonCorpus():
-    def __init__(this):
-        this.comparisonpairs = []
-
-    def addComparison(this,comparison):
-        this.comparisonpairs.append(comparison)
-    
-    def generateMetrics(this):
-        BLEUscores = []
-        HFscores = []
-        lengthAnomoly = []
-
-        ref, gen = zip(*this.comparisonPairs)
-
-        print(ref)
-        print(gen)
-
-        #sentence transformer model
-        model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-        ref_embeddings = model.encode(ref, convert_to_tensor = True)
-        gen_embeddings = model.encode(gen, convert_to_tensor = True)
-
-        for i in range(ref_embeddings):
-            HFscores.append(util.pytorch_cos_sim(ref_embeddings[i],gen_embeddings[i])[0][0])
-            BLEUscores.append(sentence_bleu([ref[i].split(" ")],gen[i].split(" ")))
-        
-        print("Number of Comments in comparison: ", len(gen))
-        print("BLEU similarity metrics for dataset: ")
-        print("Mean: ",np.mean(BLEUscores))
-        print("Median: ",np.median(BLEUscores))
-        print("HF Sentence-Transformer similarity metrics for dataset: ")
-        print("Mean: ",np.mean(HFscores))
-        print("Median: ",np.median(HFscores))
-        print("")
 
 def parse_df_to_dict(code_dataframe: pd.DataFrame):
     """ Function Makes the Pandas DataFrame into something more parsable
@@ -82,7 +48,8 @@ def main(
         verbose: bool = typer.Option(False, "--verbose", help = "Default False; display verbose output during program execution"),
         new_directories: bool = typer.Option(False, "--new-directories", help = "Default False; creates new directories within which to put code with generated comments"),
         generate_similarity_scores: bool = typer.Option(False, "--generate-similarity-scores", help = "Generates similarity scores between source and generated comments"),
-        no_output: bool = typer.Option(False, "--no-output", help = "prevents output from being written to files. This is useful in conjunction with a flag like --generate-similarity-scores")
+        no_output: bool = typer.Option(False, "--no-output", help = "prevents output from being written to files. This is useful in conjunction with a flag like --generate-similarity-scores"),
+        use_cuda: bool = typer.Option(False, "--cuda", help="Default False; uses nvidia gpu for inference. Make sure appropriate drivers/libraries are installed.")
         ):
     
     if not directory.is_dir():
@@ -92,6 +59,19 @@ def main(
     if(new_directories and overwrite_files):
         pprint("The new-directories flag and the overwrite-files flags are mutually exclusive. [bold red]Please only specify one.[/bold red]")
         raise typer.Exit()
+
+    # Use GPU
+    device = None
+    if use_cuda:
+        if torch.cuda.is_available():
+            device = torch.device('cuda')
+            pprint(f"Using [bold green]{device}[/bold green] for inference")
+        else:
+            device =torch.device('cpu')
+            pprint(f"[bold red]Did not find cuda device.[/bold red] Using [bold green]{device}[/bold green] for inference")
+    else:
+        device = torch.device('cpu')
+        pprint(f"Using [bold green]{device}[/bold green] for inference")
 
     # Code Extracting
     code_info_df = None
@@ -187,13 +167,13 @@ def main(
 
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), redirect_stdout=verbose)  as progress_model:
         progress_model.add_task(description="Setting up Model (This may take a while)", total=None)
-        tokenizer = RobertaTokenizer.from_pretrained('.')
-        model = T5ForConditionalGeneration.from_pretrained('.')
+        tokenizer = RobertaTokenizer.from_pretrained(os.path.dirname(os.path.abspath(__file__)))
+        model = T5ForConditionalGeneration.from_pretrained(os.path.dirname(os.path.abspath(__file__))).to(device)
     
     # Inference
     for key in track(parsed_dict.keys(), "Generating Comments..."):
         for index, code_info in enumerate(parsed_dict[key]):
-            input_ids = tokenizer(code_info["code"][:512], return_tensors="pt").input_ids
+            input_ids = tokenizer(code_info["code"][:512], return_tensors="pt").input_ids.to(device)
             generated_ids = model.generate(input_ids, max_length=512)
             generated_comment = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
             parsed_dict[key][index]["generated_comment"] = generated_comment
@@ -248,7 +228,7 @@ def main(
         gen_embeddings = [model.encode(g, convert_to_tensor = True) for g in gen]
 
         for i in range(len(ref_embeddings)):
-            HFscores.append(util.pytorch_cos_sim(ref_embeddings[i],gen_embeddings[i])[0][0])
+            HFscores.append(util.pytorch_cos_sim(ref_embeddings[i],gen_embeddings[i])[0][0].cpu())
             BLEUscores.append(sentence_bleu([ref[i].split(" ")],gen[i].split(" ")))
         
         print("Number of Comments in comparison: ", len(gen))
