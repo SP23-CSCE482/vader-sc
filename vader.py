@@ -13,27 +13,6 @@ from nltk.translate.bleu_score import sentence_bleu
 import numpy as np
 from sentence_transformers import SentenceTransformer, util
 
-class Comparison():
-    def __init__(this, ref, gen):
-        this.ref = ref
-        this.gen = gen
-
-    def compareBLEU(this):
-        refsplit = this.ref.split(" ")
-        gensplit = this.gen.split(" ")
-        
-        score = sentence_bleu([refsplit],gensplit)
-        this.similarity = score
-        return(score)
-    
-    def compareHF(this):
-        model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-
-        ref_embedding = model.encode(this.ref, convert_to_tensor = True)
-        gen_embedding = model.encode(this.gen, convert_to_tensor = True)
-
-        return(util.pytorch_cos_sim(ref_embedding,gen_embedding)[0][0])
-
 class comparisonCorpus():
     def __init__(this):
         this.comparisonpairs = []
@@ -45,21 +24,28 @@ class comparisonCorpus():
         BLEUscores = []
         HFscores = []
         lengthAnomoly = []
+
+        ref, gen = zip(*this.comparisonPairs)
+
+        print(ref)
+        print(gen)
+
+        #sentence transformer model
+        model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+        ref_embeddings = model.encode(ref, convert_to_tensor = True)
+        gen_embeddings = model.encode(gen, convert_to_tensor = True)
+
+        for i in range(ref_embeddings):
+            HFscores.append(util.pytorch_cos_sim(ref_embeddings[i],gen_embeddings[i])[0][0])
+            BLEUscores.append(sentence_bleu([ref[i].split(" ")],gen[i].split(" ")))
         
-        for comparison in this.comparisonpairs:
-            BLEUscores.append(comparison.compareBLEU())
-            HFscores.append(comparison.compareHF())
-            lengthAnomoly.append(np.abs(len(comparison.ref)-len(comparison.gen)))
-        
+        print("Number of Comments in comparison: ", len(gen))
         print("BLEU similarity metrics for dataset: ")
         print("Mean: ",np.mean(BLEUscores))
         print("Median: ",np.median(BLEUscores))
         print("HF Sentence-Transformer similarity metrics for dataset: ")
         print("Mean: ",np.mean(HFscores))
         print("Median: ",np.median(HFscores))
-        print("Length anomoly metrics for dataset: ")
-        print("Mean: ",np.mean(lengthAnomoly))
-        print("Median: ",np.median(lengthAnomoly))
         print("")
 
 def parse_df_to_dict(code_dataframe: pd.DataFrame):
@@ -95,7 +81,8 @@ def main(
         non_recursive: bool = typer.Option(False, "--non-recursive", help = "Default False; only generate comments for files in immediate directory and not children directories"),
         verbose: bool = typer.Option(False, "--verbose", help = "Default False; display verbose output during program execution"),
         new_directories: bool = typer.Option(False, "--new-directories", help = "Default False; creates new directories within which to put code with generated comments"),
-        generate_similarity_scores: bool = typer.Option(False, "--generate-similarity-scores", help = "Generates similarity scores between source and generated comments")
+        generate_similarity_scores: bool = typer.Option(False, "--generate-similarity-scores", help = "Generates similarity scores between source and generated comments"),
+        no_output: bool = typer.Option(False, "--no-output", help = "prevents output from being written to files. This is useful in conjunction with a flag like --generate-similarity-scores")
         ):
     
     if not directory.is_dir():
@@ -115,6 +102,7 @@ def main(
 
     pprint(f"Generating comments for [bold green]{directory}[/bold green]")
 
+    #function extraction
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"))  as progress_parsing:
         progress_parsing.add_task(description="Extracting Functions", total=None)
         progress_parsing.add_task(description="Parsing Functions", total=None)
@@ -123,32 +111,36 @@ def main(
 
     pprint(f"Found [bold green]{code_info_df.shape[0]}[/bold green] functions in [bold green]{len(parsed_dict.keys())}[/bold green] files")
 
+    #comment-scraping
     if(generate_similarity_scores):
         linenums = code_info_df.loc[:,"Line"]
         funcnames = code_info_df.loc[:,"Uniq ID"]
         curFunc = 0
-        print(parsed_dict.keys())
-        print("funcnames",funcnames)
-        print("linenums",linenums)
+        if(verbose):
+            print(parsed_dict.keys())
+            print("funcnames",funcnames)
+            print("linenums",linenums)
 
         
-
         for key in track(parsed_dict.keys(), "Finding Code-Comment Pairs for similarity testing"):
             function_index_within_file = 0
             filet = funcnames[curFunc][ : funcnames[curFunc].find("_", funcnames[curFunc].rfind("."))]
 
-            print("funcname current: ",funcnames[curFunc])
+            
             
             extension = filet.split(".")[1].lower()
-            print("filet: ",filet)
-            print("funcname without function: ",funcnames[curFunc].split(".")[0])
-            print("extension: ",extension)
+            if(verbose):
+                print("funcname current: ",funcnames[curFunc])
+                print("filet: ",filet)
+                print("funcname without function: ",funcnames[curFunc].split(".")[0])
+                print("extension: ",extension)
             while(curFunc < len(funcnames) and funcnames[curFunc].split(".")[0] == filet.split(".")[0]):
                 curFile = open(filet,"r")
                 comment = ""
-                print(curFunc)
-                print(function_index_within_file)
-                print(linenums[curFunc])
+                if(verbose):
+                    print(curFunc)
+                    print(function_index_within_file)
+                    print(linenums[curFunc])
                 try:
                     fromLineNum = curFile.readlines()[(max(linenums[curFunc] - 14, 0)) : linenums[curFunc]][::-1]
                     drought = 0
@@ -170,23 +162,24 @@ def main(
                             break
         
                     if(comment != ""):
-                        print("comment found:",comment)
+                        if(verbose):
+                            print("comment found:",comment)
 
                         parsed_dict[key][function_index_within_file]["original_comment"] = comment
                         
                     else:
-                        print("No Comment found")
-                        print("source text: ","".join(fromLineNum))
+                        if(verbose):
+                            print("No Comment found")
+                            print("source text: ","".join(fromLineNum))
                         parsed_dict[key][function_index_within_file]["original_comment"] = ""
                 except Exception as e:
-                    print(e)
-                    traceback.print_exc()
-                    print("source text: ","".join(fromLineNum))
+                    if(verbose):
+                        print(e)
+                        traceback.print_exc()
+                        print("source text: ","".join(fromLineNum))
                     
                 curFunc += 1
                 function_index_within_file += 1
-
-    print(parsed_dict)
 
     # Retrieve Model
     tokenizer = None
@@ -206,42 +199,66 @@ def main(
             parsed_dict[key][index]["generated_comment"] = generated_comment
             if(verbose): pprint(f"Comment generated for " + key)
 
-    print(parsed_dict)
     # Saving File
-    for key in track(parsed_dict.keys(), "Saving Comments..."):
-        parsed_dict[key].sort(key=lambda x: x["line_no"])
-        if(new_directories):
-            if (not (os.path.isdir(key[:key.rfind("/")] + "/VaderSC_Commented"))):
-                os.mkdir(key[:key.rfind("/")] + "/VaderSC_Commented")
-            mod_file_name = key[:key.rfind("/")] + "/VaderSC_Commented" + key[key.rfind("/") :]
-        else:
-            mod_file_name = key[:key.rfind(".")] + "_mod" + key[key.rfind("."):]
-        line_counter = 1
-        array_counter = 0
-        if (os.path.isfile(key)):
-            with open(key, "r") as og_file:
-                with open(mod_file_name, "w") as mod_file:
-                    while(array_counter != len(parsed_dict[key])):
-                        file_ending = Path(key).suffix.upper()
-                        if(parsed_dict[key][array_counter]["line_no"] == line_counter):
-                            mod_file.write(f"{COMMENT_MAP[file_ending]} Generated: {parsed_dict[key][array_counter]['generated_comment']}\n")
-                            array_counter +=1
-                        else:
-                            mod_file.write(og_file.readline())
-                            line_counter +=1
-                    mod_file.write(og_file.read())
-                    if(verbose): pprint(f"Comment inserted for " + key)
-            if(overwrite_files):
-                os.remove(key)
-                os.rename(mod_file_name, key)
+    if not no_output:
+        for key in track(parsed_dict.keys(), "Saving Comments..."):
+            parsed_dict[key].sort(key=lambda x: x["line_no"])
+            if(new_directories):
+                if (not (os.path.isdir(key[:key.rfind("/")] + "/VaderSC_Commented"))):
+                    os.mkdir(key[:key.rfind("/")] + "/VaderSC_Commented")
+                mod_file_name = key[:key.rfind("/")] + "/VaderSC_Commented" + key[key.rfind("/") :]
+            else:
+                mod_file_name = key[:key.rfind(".")] + "_mod" + key[key.rfind("."):]
+            line_counter = 1
+            array_counter = 0
+            if (os.path.isfile(key)):
+                with open(key, "r") as og_file:
+                    with open(mod_file_name, "w") as mod_file:
+                        while(array_counter != len(parsed_dict[key])):
+                            file_ending = Path(key).suffix.upper()
+                            if(parsed_dict[key][array_counter]["line_no"] == line_counter):
+                                mod_file.write(f"{COMMENT_MAP[file_ending]} Generated: {parsed_dict[key][array_counter]['generated_comment']}\n")
+                                array_counter +=1
+                            else:
+                                mod_file.write(og_file.readline())
+                                line_counter +=1
+                        mod_file.write(og_file.read())
+                        if(verbose): pprint(f"Comment inserted for " + key)
+                if(overwrite_files):
+                    os.remove(key)
+                    os.rename(mod_file_name, key)
 
+    # Use generated comments to determine performance of model
     if(generate_similarity_scores):
-        cc = comparisonCorpus()
+        ref = []
+        gen = []
         for key in parsed_dict.keys():
             for func in parsed_dict[key]:
-                cc.addComparison(Comparison(func["original_comment"],func["generated_comment"]))
+                #do not compare generated comments to empty comments
+                if(len(func["original_comment"]) >= 3):
+                    ref.append(func["original_comment"])
+                    gen.append(func["generated_comment"])
         
-        cc.generateMetrics()
+        BLEUscores = []
+        HFscores = []
+
+        #sentence transformer model
+        model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+        ref_embeddings = [model.encode(r, convert_to_tensor = True) for r in ref]
+        gen_embeddings = [model.encode(g, convert_to_tensor = True) for g in gen]
+
+        for i in range(len(ref_embeddings)):
+            HFscores.append(util.pytorch_cos_sim(ref_embeddings[i],gen_embeddings[i])[0][0])
+            BLEUscores.append(sentence_bleu([ref[i].split(" ")],gen[i].split(" ")))
+        
+        print("Number of Comments in comparison: ", len(gen))
+        print("BLEU similarity metrics for dataset: ")
+        print("Mean: ",np.mean(BLEUscores))
+        print("Median: ",np.median(BLEUscores))
+        print("HF Sentence-Transformer similarity metrics for dataset: ")
+        print("Mean: ",np.mean(HFscores))
+        print("Median: ",np.median(HFscores))
+        print("")
                 
 
     pprint(f"Created [bold green]{len(parsed_dict)}[/bold green] files")
