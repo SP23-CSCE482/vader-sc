@@ -1,0 +1,7 @@
+.github/
+.vscode/
+*.bin
+SC_Venv/
+*.log
+__pycache__/*
+*/__pycache__

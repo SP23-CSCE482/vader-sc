@@ -8,9 +8,11 @@ import re
 import sys
 import time
 import pprint
+import logging
 
 import pandas as pd
 import extractor_log as cl
+from rich import print
 
 LOG = cl.get_logger()
 DELTA_BODY = []
@@ -451,7 +453,7 @@ def clean_py_methods(data_body):
     return data_body
 
 
-def filter_files(list_files):
+def filter_files(list_files, non_recursive):
     """ Function to filter required files from list of all files
     @parameters
     list_files: List of all files that the given repository contains
@@ -459,6 +461,8 @@ def filter_files(list_files):
     This function returns the list of required file(.java, .cpp, .c, .cs, .py) paths """
     local_files = []
     for files in list_files:
+        if(non_recursive): 
+            if(files.count("/") > 1 or files.count("\\") > 1): continue
         extension = files.split('.')[-1].upper()  # pragma: no mutate
         if len(extension).__trunc__() > 0:
             if extension in FILE_TYPE:
@@ -707,7 +711,7 @@ def initialize_values(delta, annot, path_loc, report_folder):
 
 
 def extractor(path_loc, annot=None, delta=None, functionstartwith=None, report_folder=None, exclude=None, ignoreDocumented=None,
-              removeCppSignatures = None, non_recursive = None):
+              removeCppSignatures = None, non_recursive = None, verbose = None):
     """ Function that initiates the overall process of extracting function/method definitions from the files
         @parameters
         path_loc: directory path of the repository
@@ -721,19 +725,18 @@ def extractor(path_loc, annot=None, delta=None, functionstartwith=None, report_f
         the above function call initiates the process to run function definition extraction on
         all files with @test annotation of the repository given """
     start = time.time()
+    if (verbose): LOG.addHandler(logging.StreamHandler(sys.stdout))
     if isinstance(initialize_values(delta, annot, path_loc, report_folder), str):  # pylint: disable=R1705
         return initialize_values(delta, annot, path_loc, report_folder)
     else:
         report_folder, annot = initialize_values(delta, annot, path_loc, report_folder)
     code_list = []
     line_nums = []
-    for func_name in filter_files(filter_reg_files(get_file_names(path_loc), exclude)):
+    for func_name in filter_files(filter_reg_files(get_file_names(path_loc), exclude), non_recursive):
         LOG.info("Extracting %s", func_name)  # pragma: no mutate
         if delta is not None:
             get_delta_lines(func_name, annot, delta)
         else:
-            if(non_recursive): 
-                if(func_name.count("/") > 1): continue
             functions, line_num = get_function_names(func_name, ignoreDocumented)
             if os.path.splitext(func_name)[1].upper() == ".PY":
                 code_list, line_nums = process_py_files(code_list,line_nums, line_num, func_name, annot, functionstartwith)
@@ -742,5 +745,5 @@ def extractor(path_loc, annot=None, delta=None, functionstartwith=None, report_f
     end = time.time()
     LOG.info("Extraction process took %s minutes", round((end - start) / 60, 3))  # pragma: no mutate
     LOG.info("%s vaild files has been analysed",  # pragma: no mutate
-             len(filter_files(filter_reg_files(get_file_names(path_loc), exclude))))  # pragma: no mutate
+             len(filter_files(filter_reg_files(get_file_names(path_loc), exclude), non_recursive)))  # pragma: no mutate
     return (get_final_dataframe(delta, code_list, line_nums))

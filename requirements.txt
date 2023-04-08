@@ -3,3 +3,4 @@ transformers
 typer
 rich
 pandas
+pysimplegui

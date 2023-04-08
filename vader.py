@@ -1,12 +1,11 @@
 from FunctionExtract import core_extractor
-from transformers import GPTJForCausalLM, GPT2Tokenizer
+from transformers import RobertaTokenizer, T5ForConditionalGeneration
 import inspect
 import sys
 import typer
 from pathlib import Path
 from rich import print as pprint, console
 from rich.progress import Progress, SpinnerColumn, TextColumn, track
-from multishot import multi_shot_primer
 import pandas as pd
 import os
 import torch
@@ -41,20 +40,34 @@ def main(
         ignore_documented: bool = typer.Option(False, "--ignore-documented", help = "Default False; ignores documented functions"),
         remove_cpp_signatures: bool = typer.Option(False, "--remove-cpp-signatures", help = "Default False; removes signatures of C++ functions before processing"),
         overwrite_files: bool = typer.Option(False, "--overwrite-files", help = "Default False; overwrites original files with generated comments instead of creating new ones"),
-        non_recursive: bool = typer.Option(False, "--non-recursive", help = "Default False; only generate comments for files in immediate directory and not children directories")
+        non_recursive: bool = typer.Option(False, "--non-recursive", help = "Default False; only generate comments for files in immediate directory and not children directories"),
+        verbose: bool = typer.Option(False, "--verbose", help = "Default False; display verbose output during program execution"),
+        new_directories: bool = typer.Option(False, "--new-directories", help = "Default False; creates new directories within which to put code with generated comments"),
+        use_cuda: bool = typer.Option(False, "--cuda", help="Default False; uses nvidia gpu for inference. Make sure appropriate drivers/libraries are installed.")
         ):
-
-    use_mps = False
-    device = None
-    
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-    pprint(f"Using [bold green]{device}[/bold green] for inference")
-    
     
     if not directory.is_dir():
         pprint("[bold red]Must be a directory[/bold red]")
         raise typer.Exit()
+    
+    if(new_directories and overwrite_files):
+        pprint("The new-directories flag and the overwrite-files flags are mutually exclusive. [bold red]Please only specify one.[/bold red]")
+        raise typer.Exit()
+    
+
+    # Use GPU
+    device = None
+    if use_cuda:
+        if torch.cuda.is_available():
+            device = torch.device('cuda')
+            pprint(f"Using [bold green]{device}[/bold green] for inference")
+        else:
+            device =torch.device('cpu')
+            pprint(f"[bold red]Did not find cuda device.[/bold red] Using [bold green]{device}[/bold green] for inference")
+    else:
+        device = torch.device('cpu')
+        pprint(f"Using [bold green]{device}[/bold green] for inference")
+
     # Code Extracting
     code_info_df = None
 
@@ -66,39 +79,39 @@ def main(
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"))  as progress_parsing:
         progress_parsing.add_task(description="Extracting Functions", total=None)
         progress_parsing.add_task(description="Parsing Functions", total=None)
-        code_info_df = core_extractor.extractor(directory, ignoreDocumented = ignore_documented, removeCppSignatures = remove_cpp_signatures, non_recursive = non_recursive)
+        code_info_df = core_extractor.extractor(directory, ignoreDocumented = ignore_documented, removeCppSignatures = remove_cpp_signatures, non_recursive = non_recursive, verbose=verbose)
         parsed_dict = parse_df_to_dict(code_info_df)
 
     pprint(f"Found [bold green]{code_info_df.shape[0]}[/bold green] functions in [bold green]{len(parsed_dict.keys())}[/bold green] files")
-    
+
+
     # Retrieve Model
     tokenizer = None
     model = None
 
-    with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"))  as progress_model:
+    with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), redirect_stdout=verbose)  as progress_model:
         progress_model.add_task(description="Setting up Model (This may take a while)", total=None)
-        if use_mps:
-            model = GPTJForCausalLM.from_pretrained('EleutherAI/gpt-j-6B', torch_dtype=torch.float16).to(device)
-        else:
-            model = GPTJForCausalLM.from_pretrained('EleutherAI/gpt-j-6B', torch_dtype=torch.float16).to(device)
-        tokenizer = GPT2Tokenizer.from_pretrained('EleutherAI/gpt-j-6B')
+        tokenizer = RobertaTokenizer.from_pretrained('Salesforce/codet5-base-multi-sum')
+        model = T5ForConditionalGeneration.from_pretrained(os.path.dirname(os.path.abspath(__file__))).to(device)
     
 
     # Inference
     for key in track(parsed_dict.keys(), "Generating Comments..."):
         for index, code_info in enumerate(parsed_dict[key]):
-            input_ids = tokenizer.encode(multi_shot_primer+code_info["code"][:1250]+"\n<--CODE_END 3-->\n<--COMMENT 3-->\n", return_tensors="pt").to(device)
-            generated_ids = model.generate(input_ids, max_new_tokens=300)
-            generated_comment = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
-            print(generated_comment)
-            generated_comment = generated_comment[generated_comment.find("<--COMMENT 3-->")+len("<--COMMENT 3-->"):generated_comment.find("<--COMMENT_END 3-->")]
-            parsed_dict[key][index]["generated_comment"] = generated_comment
-            del input_ids
-    
+            input_ids = tokenizer(code_info["code"][:512], return_tensors="pt").input_ids.to(device)
+            generated_ids = model.generate(input_ids, max_length=512)
+            parsed_dict[key][index]["generated_comment"] = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+            if(verbose): pprint(f"Comment generated for " + key) 
+
     # Saving File
     for key in track(parsed_dict.keys(), "Saving Comments..."):
         parsed_dict[key].sort(key=lambda x: x["line_no"])
-        mod_file_name = key[:key.rfind(".")] + "_mod" + key[key.rfind("."):]
+        if(new_directories):
+            if (not (os.path.isdir(key[:key.rfind("/")] + "/VaderSC_Commented"))):
+                os.mkdir(key[:key.rfind("/")] + "/VaderSC_Commented")
+            mod_file_name = key[:key.rfind("/")] + "/VaderSC_Commented" + key[key.rfind("/") :]
+        else:
+            mod_file_name = key[:key.rfind(".")] + "_mod" + key[key.rfind("."):]
         line_counter = 1
         array_counter = 0
         if (os.path.isfile(key)):
@@ -113,6 +126,7 @@ def main(
                             mod_file.write(og_file.readline())
                             line_counter +=1
                     mod_file.write(og_file.read())
+                    if(verbose): pprint(f"Comment inserted for " + key)
             if(overwrite_files):
                 os.remove(key)
                 os.rename(mod_file_name, key)
