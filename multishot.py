@@ -179,3 +179,18 @@ CODE_END
 COMMENT:'''
 
 multi_shot_comment_end["DOCSTRING.AI"] = '''COMMENT_END''' 
+
+
+multi_shot_primer["NOSHOT"] = '''
+CODE:
+
+'''
+multi_shot_key["NOSHOT"] = '''
+CODE:''' 
+
+multi_shot_comment["NOSHOT"] = '''
+CODE_END
+
+COMMENT:'''
+
+multi_shot_comment_end["NOSHOT"] = '''COMMENT_END''' 

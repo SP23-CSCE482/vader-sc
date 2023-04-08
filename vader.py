@@ -11,6 +11,9 @@ import os
 from multishot import multi_shot_primer, multi_shot_comment, multi_shot_comment_end, multi_shot_key
 import torch
 
+# Use for llama model
+from transformers import LlamaTokenizer
+
 def parse_df_to_dict(code_dataframe: pd.DataFrame):
     """ Function Makes the Pandas DataFrame into something more parsable
         @parameters
@@ -47,7 +50,8 @@ def main(
         use_cuda: bool = typer.Option(False, "--cuda", help="Default False; uses nvidia gpu for inference. Make sure appropriate drivers/libraries are installed."),
         custom_t5_model: str = typer.Option("", "--custom-t5-model", help="Default T5-Base; customize T5 model used for inference"),
         custom_gpt2_model: str = typer.Option("", "--custom-gpt2-model", help="Default None; customize gpt2 model used for inference"),
-        gpt2_style: str = typer.Option("DOCSTYLE", "--gpt2-style", help="Default DOCSTYLE; Change style on Comments for gpt2 models")
+        gpt2_style: str = typer.Option("DOCSTYLE", "--gpt2-style", help="Default DOCSTYLE; Change style on Comments for gpt2 models"),
+        custom_dir: str = typer.Option("VaderSC_Commented", "--new-dir-name", help="Default VaderSC_Commented; creates new custom directory name")
         ):
     
     if not directory.is_dir():
@@ -125,12 +129,15 @@ def main(
         try:
             if custom_gpt2_model:
                 model = AutoModelForCausalLM.from_pretrained(model_path,cache_dir=cache_dir, torch_dtype=torch.float16).to(device)
-                tokenizer = AutoTokenizer.from_pretrained(token_path, cache_dir=cache_dir)
+                # Comment Switch if using llama model
+                # tokenizer =  tokeAutoTokenizer.from_pretrained(token_path, cache_dir=cache_dir)
+                tokenizer = LlamaTokenizer.from_pretrained(token_path, cache_dir=cache_dir) if "llama" in token_path else AutoTokenizer.from_pretrained(token_path, cache_dir=cache_dir) 
             else:
                 model = T5ForConditionalGeneration.from_pretrained(model_path,cache_dir=cache_dir).to(device)
                 tokenizer = RobertaTokenizer.from_pretrained(token_path, cache_dir=cache_dir)
         except ValueError as e:
             pprint("Model was not [bold red]Valid[/bold red]")
+            print(e)
             raise typer.Exit()
     
 
@@ -143,7 +150,6 @@ def main(
                 generated_ids = model.generate(input_ids, max_new_tokens=300)
                 generated_comment = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
                 generated_comment = generated_comment[generated_comment.find(multi_shot_key[gpt2_style]):]
-                print(generated_comment)
                 generated_comment = generated_comment[generated_comment.find(multi_shot_comment[gpt2_style])+len(multi_shot_comment[gpt2_style]):]
                 generated_comment = generated_comment[:generated_comment.find(multi_shot_comment_end[gpt2_style])]
                 parsed_dict[key][index]["generated_comment"] = generated_comment
@@ -159,10 +165,10 @@ def main(
     for key in track(parsed_dict.keys(), "Saving Comments..."):
         parsed_dict[key].sort(key=lambda x: x["line_no"])
         if(new_directories):
-            if (not (os.path.isdir(key[:key.rfind("/")] + "/VaderSC_Commented"))):
-                os.mkdir(key[:key.rfind("/")] + "/VaderSC_Commented")
-            mod_file_name = key[:key.rfind("/")] + "/VaderSC_Commented" + key[key.rfind("/") :]
-            mod_file_name = key[:key.rfind("/")] + "/VaderSC_Commented" + key[key.rfind("/") :]
+            if (not (os.path.isdir(key[:key.rfind("/")] + "/"+custom_dir))):
+                os.mkdir(key[:key.rfind("/")] + "/"+custom_dir)
+            mod_file_name = key[:key.rfind("/")] + "/"+custom_dir + key[key.rfind("/") :]
+            mod_file_name = key[:key.rfind("/")] + "/"+custom_dir + key[key.rfind("/") :]
         else:
             mod_file_name = key[:key.rfind(".")] + "_mod" + key[key.rfind("."):]
         line_counter = 1
