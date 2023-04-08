@@ -1,5 +1,5 @@
 from FunctionExtract import core_extractor
-from transformers import RobertaTokenizer, T5ForConditionalGeneration
+from transformers import RobertaTokenizer, T5ForConditionalGeneration, AutoModelForCausalLM, AutoTokenizer
 import inspect
 import sys
 import typer
@@ -8,6 +8,7 @@ from rich import print as pprint, console
 from rich.progress import Progress, SpinnerColumn, TextColumn, track
 import pandas as pd
 import os
+from multishot import multi_shot_primer, multi_shot_comment, multi_shot_comment_end, multi_shot_key
 import torch
 
 def parse_df_to_dict(code_dataframe: pd.DataFrame):
@@ -43,7 +44,10 @@ def main(
         non_recursive: bool = typer.Option(False, "--non-recursive", help = "Default False; only generate comments for files in immediate directory and not children directories"),
         verbose: bool = typer.Option(False, "--verbose", help = "Default False; display verbose output during program execution"),
         new_directories: bool = typer.Option(False, "--new-directories", help = "Default False; creates new directories within which to put code with generated comments"),
-        use_cuda: bool = typer.Option(False, "--cuda", help="Default False; uses nvidia gpu for inference. Make sure appropriate drivers/libraries are installed.")
+        use_cuda: bool = typer.Option(False, "--cuda", help="Default False; uses nvidia gpu for inference. Make sure appropriate drivers/libraries are installed."),
+        custom_t5_model: str = typer.Option("", "--custom-t5-model", help="Default T5-Base; customize T5 model used for inference"),
+        custom_gpt2_model: str = typer.Option("", "--custom-gpt2-model", help="Default None; customize gpt2 model used for inference"),
+        gpt2_style: str = typer.Option("DOCSTYLE", "--gpt2-style", help="Default DOCSTYLE; Change style on Comments for gpt2 models")
         ):
     
     if not directory.is_dir():
@@ -70,6 +74,33 @@ def main(
 
     # Code Extracting
     code_info_df = None
+    
+    # Model Collision
+    vader_path = os.path.dirname(os.path.abspath(__file__))
+    cache_dir = os.path.join(vader_path, "models")
+    model_path = None
+    token_path = None
+    if custom_gpt2_model and custom_t5_model:
+        pprint("custom-gpt2-model and custom-t5-model are mutually exclusive. [bold red]Please only specify one.[/bold red]")
+        raise typer.Exit()
+    elif custom_t5_model == "" and custom_gpt2_model == "":
+        if os.path.exists(os.path.join(vader_path, "models/custom_t5/pytorch_model.bin")):
+            pprint("Using [bold green]Custom Vader Model[/bold green] for inference")
+            model_path = os.path.join(vader_path, "models/custom_t5")
+            token_path = os.path.join(vader_path, "models/custom_t5")
+        else:
+            pprint("Using [bold green]Stock CodeT5 Model[/bold green] for inference")
+            model_path = "Salesforce/codet5-base-multi-sum"
+            token_path = "Salesforce/codet5-base-multi-sum"
+    elif custom_t5_model:
+        pprint(f"Using [bold green]{custom_t5_model}[/bold green] for inference")
+        model_path = custom_t5_model
+        token_path = custom_t5_model
+    else:
+        pprint(f"Using [bold green]{custom_gpt2_model}[/bold green] for inference")
+        model_path = custom_gpt2_model
+        token_path = custom_gpt2_model
+            
 
     # Transform Data
     parsed_dict = {}
@@ -91,16 +122,37 @@ def main(
 
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), redirect_stdout=verbose)  as progress_model:
         progress_model.add_task(description="Setting up Model (This may take a while)", total=None)
-        tokenizer = RobertaTokenizer.from_pretrained('Salesforce/codet5-base-multi-sum')
-        model = T5ForConditionalGeneration.from_pretrained(os.path.dirname(os.path.abspath(__file__))).to(device)
+        try:
+            if custom_gpt2_model:
+                model = AutoModelForCausalLM.from_pretrained(model_path,cache_dir=cache_dir, torch_dtype=torch.float16).to(device)
+                tokenizer = AutoTokenizer.from_pretrained(token_path, cache_dir=cache_dir)
+            else:
+                model = T5ForConditionalGeneration.from_pretrained(model_path,cache_dir=cache_dir).to(device)
+                tokenizer = RobertaTokenizer.from_pretrained(token_path, cache_dir=cache_dir)
+        except ValueError as e:
+            pprint("Model was not [bold red]Valid[/bold red]")
+            raise typer.Exit()
     
 
     # Inference
     for key in track(parsed_dict.keys(), "Generating Comments..."):
         for index, code_info in enumerate(parsed_dict[key]):
-            input_ids = tokenizer(code_info["code"][:512], return_tensors="pt").input_ids.to(device)
-            generated_ids = model.generate(input_ids, max_length=512)
-            parsed_dict[key][index]["generated_comment"] = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+            if custom_gpt2_model:
+                primed_code = multi_shot_primer[gpt2_style]+code_info["code"][:1250]+multi_shot_comment[gpt2_style]
+                input_ids = tokenizer.encode(primed_code, return_tensors="pt").to(device)
+                generated_ids = model.generate(input_ids, max_new_tokens=300)
+                generated_comment = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+                generated_comment = generated_comment[generated_comment.find(multi_shot_key[gpt2_style]):]
+                print(generated_comment)
+                generated_comment = generated_comment[generated_comment.find(multi_shot_comment[gpt2_style])+len(multi_shot_comment[gpt2_style]):]
+                generated_comment = generated_comment[:generated_comment.find(multi_shot_comment_end[gpt2_style])]
+                parsed_dict[key][index]["generated_comment"] = generated_comment
+                del input_ids
+            else:
+                input_ids = tokenizer(code_info["code"][:512], return_tensors="pt").input_ids.to(device)
+                generated_ids = model.generate(input_ids, max_length=512)
+                parsed_dict[key][index]["generated_comment"] = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+            
             if(verbose): pprint(f"Comment generated for " + key) 
 
     # Saving File
