@@ -110,6 +110,7 @@ def main(
             if (not (os.path.isdir(key[:key.rfind("/")] + "/VaderSC_Commented"))):
                 os.mkdir(key[:key.rfind("/")] + "/VaderSC_Commented")
             mod_file_name = key[:key.rfind("/")] + "/VaderSC_Commented" + key[key.rfind("/") :]
+            mod_file_name = key[:key.rfind("/")] + "/VaderSC_Commented" + key[key.rfind("/") :]
         else:
             mod_file_name = key[:key.rfind(".")] + "_mod" + key[key.rfind("."):]
         line_counter = 1
