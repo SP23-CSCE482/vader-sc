@@ -51,7 +51,8 @@ def main(
         custom_t5_model: str = typer.Option("", "--custom-t5-model", help="Default T5-Base; customize T5 model used for inference"),
         custom_gpt2_model: str = typer.Option("", "--custom-llm-model", help="Default None; customize LLM model used for inference"),
         gpt2_style: str = typer.Option("DOCSTYLE", "--llm-style", help="Default DOCSTYLE; Change style on comments for LLM models"),
-        custom_dir: str = typer.Option("VaderSC_Commented", "--out-name", help="Default VaderSC_Commented; specifies the output folder for the generated comments and code")
+        custom_dir: str = typer.Option("VaderSC_Commented", "--out-name", help="Default VaderSC_Commented; specifies the output folder for the generated comments and code"),
+        batch_size: int = typer.Option(1, "--batch-size", help="Default 1; If custom-llm-model is used then you can specify batch size.")
         ):
     
     if not directory.is_dir():
@@ -151,6 +152,27 @@ def main(
         comment_tokens = tokenizer.encode(multi_shot_comment[gpt2_style])
         max_code_token_size = (model.config.max_position_embeddings - buffer_size) - len(primer_tokens) - len(comment_tokens)
     for key in track(parsed_dict.keys(), "Generating Comments..."):
+        if batch_size > 1 and custom_gpt2_model != "":
+            num_batches = (len(parsed_dict[key]) + batch_size - 1) // batch_size
+            for batch_idx in range(num_batches):
+                batch_start = batch_idx * batch_size
+                batch_end = min((batch_idx + 1) * batch_size, len(parsed_dict[key]))
+                input_sequences = []
+                for code_info in parsed_dict[key][batch_start:batch_end]:
+                    code_tokens = tokenizer.encode(code_info["code"])[:max_code_token_size]
+                    input_tokens = primer_tokens + code_tokens + comment_tokens
+                    input_sequences.append(input_tokens)
+                input_ids = torch.tensor(input_sequences, dtype=torch.long).to(device)
+                generated_ids = model.generate(input_ids, max_new_tokens=300)
+                for index, gen_id in enumerate(generated_ids):
+                    decoded_comment = tokenizer.decode(gen_id, skip_special_tokens=True)
+                    decoded_comment = decoded_comment[decoded_comment.find(multi_shot_key[gpt2_style]):]
+                    decoded_comment = decoded_comment[decoded_comment.find(multi_shot_comment[gpt2_style])+len(multi_shot_comment[gpt2_style]):]
+                    decoded_comment = decoded_comment[:decoded_comment.find(multi_shot_comment_end[gpt2_style])]
+                    parsed_dict[key][batch_start + index]["generated_comment"] = generated_comment
+                if verbose: pprint(f"Comments generated for batch {batch_idx + 1} in {key}")
+            continue
+        
         for index, code_info in enumerate(parsed_dict[key]):
             if custom_gpt2_model:
                 #Build
