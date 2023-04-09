@@ -3,7 +3,7 @@ This is the repository for VADER-SC - A project to increase source code readabil
 VaderSC is an automatic source code comment generation tool that leverages transformer-based and LLM models such as T5 and GPT. It generates human-readable and meaningful comments for various programming languages such as Python, C++, and Java.
 
 
-## Installation Script
+## Installation Script (Ubuntu)
 * Make sure you are not in any existing python environments and that you atleast have python 3.6 installed
 * To install using the script you must be root and you must run ```chmod +x install.sh && sudo ./install.sh``` inside the folder.
 * You must download the model when prompted so the program runs properly (~800+ MB).
