@@ -1,6 +1,7 @@
 torch
-transformers
+git+https://github.com/huggingface/transformers
 typer
 rich
 pandas
 pysimplegui
+sentencepiece
