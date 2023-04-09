@@ -53,7 +53,7 @@ echo "Do you want to download our custom CodeT5 model? (y/n)"
 read response
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
 then
-    wget https://storage.googleapis.com/model_bucket_for_capstone_tamu/pytorch_model.bin 
+    cd models/custom_t5 && https://storage.googleapis.com/model_bucket_for_capstone_tamu/pytorch_model.bin 
 fi
 
 # Add alias to .bashrc file
