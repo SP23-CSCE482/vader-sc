@@ -147,10 +147,14 @@ def main(
     comment_tokens = None
     max_code_token_size = None
     buffer_size = 300
+    
     if custom_gpt2_model:
         primer_tokens = tokenizer.encode(multi_shot_primer[gpt2_style])
         comment_tokens = tokenizer.encode(multi_shot_comment[gpt2_style])
         max_code_token_size = (model.config.max_position_embeddings - buffer_size) - len(primer_tokens) - len(comment_tokens)
+        if tokenizer.pad_token_id is None:
+            tokenizer.pad_token_id = tokenizer.eos_token_id
+
     for key in track(parsed_dict.keys(), "Generating Comments..."):
         if batch_size > 1 and custom_gpt2_model != "":
             num_batches = (len(parsed_dict[key]) + batch_size - 1) // batch_size
@@ -158,20 +162,36 @@ def main(
                 batch_start = batch_idx * batch_size
                 batch_end = min((batch_idx + 1) * batch_size, len(parsed_dict[key]))
                 input_sequences = []
+                attention_masks = []
                 for code_info in parsed_dict[key][batch_start:batch_end]:
                     code_tokens = tokenizer.encode(code_info["code"])[:max_code_token_size]
                     input_tokens = primer_tokens + code_tokens + comment_tokens
                     input_sequences.append(input_tokens)
-                input_ids = torch.tensor(input_sequences, dtype=torch.long).to(device)
-                generated_ids = model.generate(input_ids, max_new_tokens=300)
+                    attention_masks.append([1] * len(input_tokens))
+
+                # Pad input_sequences and attention_masks to the same length
+                max_seq_length = max(len(seq) for seq in input_sequences)
+                tokenizer.pad_token_id = tokenizer.eos_token_id
+                padded_sequences = [seq + [tokenizer.pad_token_id] * (max_seq_length - len(seq)) for seq in input_sequences]
+                padded_attention_masks = [mask + [0] * (max_seq_length - len(mask)) for mask in attention_masks]
+
+                input_ids = torch.tensor(padded_sequences, dtype=torch.long).to(device)
+                attention_mask = torch.tensor(padded_attention_masks, dtype=torch.long).to(device)
+                generated_ids = model.generate(input_ids, max_new_tokens=300, attention_mask=attention_mask)
                 for index, gen_id in enumerate(generated_ids):
+                    #gen_id_list = gen_id.tolist()
+                    # Find the first instance of the eos_token_id and trim the list
+                    #if tokenizer.eos_token_id in gen_id_list:
+                        #gen_id_list = gen_id_list[:gen_id_list.index(tokenizer.eos_token_id)]
+                    # Decode the trimmed list of token IDs
                     decoded_comment = tokenizer.decode(gen_id, skip_special_tokens=True)
                     decoded_comment = decoded_comment[decoded_comment.find(multi_shot_key[gpt2_style]):]
                     decoded_comment = decoded_comment[decoded_comment.find(multi_shot_comment[gpt2_style])+len(multi_shot_comment[gpt2_style]):]
                     decoded_comment = decoded_comment[:decoded_comment.find(multi_shot_comment_end[gpt2_style])]
-                    parsed_dict[key][batch_start + index]["generated_comment"] = generated_comment
+                    parsed_dict[key][batch_start + index]["generated_comment"] = decoded_comment
                 if verbose: pprint(f"Comments generated for batch {batch_idx + 1} in {key}")
             continue
+
         
         for index, code_info in enumerate(parsed_dict[key]):
             if custom_gpt2_model:
