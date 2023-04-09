@@ -54,7 +54,7 @@ You can customize the behavior of VaderSC by modifying the options as described 
 * You can easily use pretrained HugginFace CasualLM and T5Conditional models using `--custom-t5-model` and `--custom-llm-model` arguments.
 * If you would like to speedup inferences and have correctly installed CUDA drivers, you can use `--cuda` flag to use it for inference.
 * The CLI has built in multishot learning for LLM. This will allow the model copy the style based on its learning set. You can define your own set in `multishot.py`. Note you will have to share tokens with the code and generated comment. This means if your multishot set is 1500 tokens and your model's max tokens is 2048. Then you will have only 248 tokens left for code since generation takes up to 300 tokens. 
-* The CLI supports LLaMa models with a couple of modifications since Transformer's pip version is not fully updated. First you have to install the main version of Transformers and sentencepiece. Then make some simple modifications to vader.py (they should be commented). This will make the CLI compatible with LlaMa models.
+* The CLI supports LLaMa models, although since it is only in bleeding edge "main" version of HugginFace Transformers it may not be stable. There might be some extra output due to some inconsistencies. 
 * For CodeT5 models and C++ code, it may be better to remove function signatures since the training data did not have any C++ code.
 ## Examples
 
