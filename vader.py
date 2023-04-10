@@ -1,5 +1,5 @@
 from FunctionExtract import core_extractor
-from transformers import RobertaTokenizer, T5ForConditionalGeneration
+from transformers import RobertaTokenizer, T5ForConditionalGeneration, AutoModelForCausalLM, AutoTokenizer
 import inspect
 import sys
 import typer
@@ -8,7 +8,11 @@ from rich import print as pprint, console
 from rich.progress import Progress, SpinnerColumn, TextColumn, track
 import pandas as pd
 import os
+from multishot import multi_shot_primer, multi_shot_comment, multi_shot_comment_end, multi_shot_key
+import torch
 
+# Use for llama model
+from transformers import LlamaTokenizer
 
 def parse_df_to_dict(code_dataframe: pd.DataFrame):
     """ Function Makes the Pandas DataFrame into something more parsable
@@ -42,7 +46,12 @@ def main(
         overwrite_files: bool = typer.Option(False, "--overwrite-files", help = "Default False; overwrites original files with generated comments instead of creating new ones"),
         non_recursive: bool = typer.Option(False, "--non-recursive", help = "Default False; only generate comments for files in immediate directory and not children directories"),
         verbose: bool = typer.Option(False, "--verbose", help = "Default False; display verbose output during program execution"),
-        new_directories: bool = typer.Option(False, "--new-directories", help = "Default False; creates new directories within which to put code with generated comments")
+        new_directories: bool = typer.Option(False, "--new-dir", help = "Default False; creates a new folder with the code and generated comments. You can specify location using dir-name"),
+        use_cuda: bool = typer.Option(False, "--cuda", help="Default False; uses nvidia gpu for inference. Make sure appropriate drivers/libraries are installed."),
+        custom_t5_model: str = typer.Option("", "--custom-t5-model", help="Default T5-Base; customize T5 model used for inference"),
+        custom_gpt2_model: str = typer.Option("", "--custom-llm-model", help="Default None; customize LLM model used for inference"),
+        gpt2_style: str = typer.Option("DOCSTYLE", "--llm-style", help="Default DOCSTYLE; Change style on comments for LLM models"),
+        custom_dir: str = typer.Option("VaderSC_Commented", "--dir-name", help="Default VaderSC_Commented; specifies the directory location of output, only works when new-dir is used")
         ):
     
     if not directory.is_dir():
@@ -53,8 +62,53 @@ def main(
         pprint("The new-directories flag and the overwrite-files flags are mutually exclusive. [bold red]Please only specify one.[/bold red]")
         raise typer.Exit()
     
+
+    # Use GPU
+    device = None
+    acc_tensor = None 
+    if use_cuda:
+        if torch.cuda.is_available():
+            device = torch.device('cuda')
+            pprint(f"Using [bold green]{device}[/bold green] for inference")
+            acc_tensor = torch.float16
+        else:
+            device =torch.device('cpu')
+            pprint(f"[bold red]Did not find cuda device.[/bold red] Using [bold green]{device}[/bold green] for inference")
+            acc_tensor = torch.float32
+    else:
+        device = torch.device('cpu')
+        pprint(f"Using [bold green]{device}[/bold green] for inference")
+        acc_tensor = torch.float32
+
     # Code Extracting
     code_info_df = None
+    
+    # Model Collision
+    vader_path = os.path.dirname(os.path.abspath(__file__))
+    cache_dir = os.path.join(vader_path, "models")
+    model_path = None
+    token_path = None
+    if custom_gpt2_model and custom_t5_model:
+        pprint("custom-gpt2-model and custom-t5-model are mutually exclusive. [bold red]Please only specify one.[/bold red]")
+        raise typer.Exit()
+    elif custom_t5_model == "" and custom_gpt2_model == "":
+        if os.path.exists(os.path.join(vader_path, "models/custom_t5/pytorch_model.bin")):
+            pprint("Using [bold green]Custom Vader Model[/bold green] for inference")
+            model_path = os.path.join(vader_path, "models/custom_t5")
+            token_path = os.path.join(vader_path, "models/custom_t5")
+        else:
+            pprint("Using [bold green]Stock CodeT5 Model[/bold green] for inference")
+            model_path = "Salesforce/codet5-base-multi-sum"
+            token_path = "Salesforce/codet5-base-multi-sum"
+    elif custom_t5_model:
+        pprint(f"Using [bold green]{custom_t5_model}[/bold green] for inference")
+        model_path = custom_t5_model
+        token_path = custom_t5_model
+    else:
+        pprint(f"Using [bold green]{custom_gpt2_model}[/bold green] for inference")
+        model_path = custom_gpt2_model
+        token_path = custom_gpt2_model
+            
 
     # Transform Data
     parsed_dict = {}
@@ -76,27 +130,71 @@ def main(
 
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}"), redirect_stdout=verbose)  as progress_model:
         progress_model.add_task(description="Setting up Model (This may take a while)", total=None)
-        tokenizer = RobertaTokenizer.from_pretrained('.')
-        model = T5ForConditionalGeneration.from_pretrained('.')
+        try:
+            if custom_gpt2_model:
+                model = AutoModelForCausalLM.from_pretrained(model_path,cache_dir=cache_dir, torch_dtype=acc_tensor).to(device)
+                # Comment Switch if using llama model
+                #tokenizer =  AutoTokenizer.from_pretrained(token_path, cache_dir=cache_dir)
+                tokenizer = LlamaTokenizer.from_pretrained(token_path, cache_dir=cache_dir) if "llama" in token_path else AutoTokenizer.from_pretrained(token_path, cache_dir=cache_dir) 
+            else:
+                model = T5ForConditionalGeneration.from_pretrained(model_path,cache_dir=cache_dir).to(device)
+                tokenizer = RobertaTokenizer.from_pretrained(token_path, cache_dir=cache_dir)
+        except ValueError as e:
+            pprint("Model was not [bold red]Valid[/bold red]")
+            print(e)
+            raise typer.Exit()
     
 
     # Inference
+    primer_tokens = None
+    comment_tokens = None
+    max_code_token_size = None
+    buffer_size = 300
+    if custom_gpt2_model:
+        primer_tokens = tokenizer.encode(multi_shot_primer[gpt2_style])
+        if(len(primer_tokens) > model.config.max_position_embeddings):
+            pprint("Model's specified maximum token sequence length less than llm-style length, defaulting to [bold yellow]LITE[/bold yellow] llm-style")
+            gpt2_style = "LITE"
+            primer_tokens = tokenizer.encode(multi_shot_primer[gpt2_style])
+        comment_tokens = tokenizer.encode(multi_shot_comment[gpt2_style])
+        max_code_token_size = (model.config.max_position_embeddings - buffer_size) - len(primer_tokens) - len(comment_tokens)
     for key in track(parsed_dict.keys(), "Generating Comments..."):
         for index, code_info in enumerate(parsed_dict[key]):
-            input_ids = tokenizer(code_info["code"][:512], return_tensors="pt").input_ids
-            generated_ids = model.generate(input_ids, max_length=512)
-            parsed_dict[key][index]["generated_comment"] = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
-            if(verbose): pprint(f"Comment generated for " + key)  
+            if custom_gpt2_model:
+                #Build
+                code_tokens = tokenizer.encode(code_info["code"])[:max_code_token_size]
+                input_tokens = primer_tokens + code_tokens + comment_tokens
+                input_ids = torch.tensor([input_tokens], dtype=torch.long).to(device)
+                attention_mask = torch.ones_like(input_ids, dtype=torch.long)
+                pad_token_id = tokenizer.eos_token_id
+                # Generate
+                generated_ids = model.generate(input_ids, max_new_tokens=300,attention_mask=attention_mask,pad_token_id=pad_token_id)
+                # After generation
+                generated_comment = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+                generated_comment = generated_comment[generated_comment.find(multi_shot_key[gpt2_style]):]
+                generated_comment = generated_comment[generated_comment.find(multi_shot_comment[gpt2_style])+len(multi_shot_comment[gpt2_style]):]
+                generated_comment = generated_comment[:generated_comment.find(multi_shot_comment_end[gpt2_style])]
+                parsed_dict[key][index]["generated_comment"] = generated_comment
+                del input_ids
+            else:
+                input_ids = tokenizer(code_info["code"][:512], return_tensors="pt").input_ids.to(device)
+                generated_ids = model.generate(input_ids, max_length=512)
+                parsed_dict[key][index]["generated_comment"] = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+            
+            if(verbose): pprint(f"Comment generated for " + key) 
 
     # Saving File
+    current_dir = os.getcwd()
     for key in track(parsed_dict.keys(), "Saving Comments..."):
         parsed_dict[key].sort(key=lambda x: x["line_no"])
+        
         if(new_directories):
-            if (not (os.path.isdir(key[:key.rfind("/")] + "/VaderSC_Commented"))):
-                os.mkdir(key[:key.rfind("/")] + "/VaderSC_Commented")
-            mod_file_name = key[:key.rfind("/")] + "/VaderSC_Commented" + key[key.rfind("/") :]
+            location_new_file = os.path.join(current_dir, custom_dir)
+            mod_file_name = os.path.join(location_new_file, os.path.relpath(key, directory))
+            os.makedirs(os.path.dirname(mod_file_name), exist_ok=True)
         else:
-            mod_file_name = key[:key.rfind(".")] + "_mod" + key[key.rfind("."):]
+            new_file_name, extension = os.path.splitext(key)
+            mod_file_name = new_file_name + "_mod" + extension
         line_counter = 1
         array_counter = 0
         if (os.path.isfile(key)):
