@@ -60,20 +60,77 @@ You can customize the behavior of VaderSC by modifying the options as described 
 
 Here are some examples of the comments generated using our CLI with GPTJ, Custom T5 model, LlaMa-14b, and CodeT5. Docstring.ai is also shown for comparison.
 
+CODE:
+```cpp
+glm::vec3 Shape::shade(glm::vec3 raydirection, glm::vec3 rayorigin, glm::vec3 intersectionPoint, Light* light) {
+	glm::vec3 Ci = light->color;
+	glm::vec3 li = glm::normalize(light->position - intersectionPoint);
+	glm::vec3 N = this->getNormal(intersectionPoint);
+	glm::vec3 ri = glm::normalize(2 * glm::dot(li, N)* N - li);
+	glm::vec3 E = glm::normalize(rayorigin - intersectionPoint);
+	glm::vec3 diffuse = getkd() * glm::max(0.0f,glm::dot(li,N));
+	glm::vec3 specular = getks() * glm::pow( glm::max(0.0f,glm::dot(ri,E)),getn() );
+	return(Ci * (diffuse + specular));
+}
+```
+
 1. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/T5Custom"`<br />
-```CODE ```
+```cpp
+// Generated: Intersection point of the light.
+```
 2. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/T5Base" --custom-t5-model "Salesforce/codet5-base-multi-sum"`<br />
- ```CODE ```
+```cpp
+// Generated: Shade the light with a ray.
+```
 3. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/gptj" --custom-llm-model "EleutherAI/gpt-j-6B"`<br />
-```CODE ```
+```cpp
+// Generated: 
+/*******************************************************************************
+* 
+*   This function calculates the normal vector of a point.
+*   It uses the getNormal function to calculate the normal vector.
+*
+* Inputs:
+*   point - a point
+*
+* Outputs:
+*   N - the normal vector of the point
+*******************************************************************************/
+```
 4. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/gptjaiStyle" --custom-llm-model "EleutherAI/gpt-j-6B" --llm-style "DOCSTRING.AI"`<br />
-```CODE ```
+```cpp
+// This is a function called `shade` that takes in three parameters: a ray direction, a ray origin, and an intersection point.
+```
 5. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/llama" --custom-llm-model "decapoda-research/llama-13b-hf"`<br />
-```CODE ```
+```cpp
+// Generated: 
+/*******************************************************************************
+* 
+*   This function returns the color of the object at the intersection point of
+*   the ray and the object.
+*
+* Inputs:
+*   raydirection - the direction of the ray
+*   rayorigin - the origin of the ray
+*   intersectionPoint - the intersection point of the ray and the object
+*   light - the light source
+*
+* Outputs:
+*   glm::vec3 - the color of the object at the intersection point
+*******************************************************************************/
+```
 6. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/llamaaiStyle" --custom-llm-model "decapoda-research/llama-13b-hf" --llm-style "DOCSTRING.AI"`<br />
-```CODE ```
+```cpp
+// This is a function called `shade` that takes in four parameters: a ray direction, a ray origin, an intersection point, and a light. The function returns a color that is a combination of the light color and the intersection point color.
+```
 7. `DOCSTRING.ai`<br />
-```CODE ```
+```cpp
+// This is a function called `shade` belonging to the `Shape` class. It takes in four parameters: `raydirection`, `rayorigin`, `intersectionPoint`, and a pointer to a `Light` object called `light`.
+```
+8. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/llamaEmoji" --custom-llm-model "decapoda-research/llama-13b-hf" --llm-style "EMOJI"` <br />
+```cpp
+//This function 🔨 shades ✅ the intersection point 🏔️ of a ray 🔥💧🌱 with a shape 🏔️. It uses the getkd 🔨 and getks 🔨 functions to calculate the diffuse and specular components of the shading.
+```
 
 ## Limitations and Issues
 
