@@ -65,16 +65,20 @@ def main(
 
     # Use GPU
     device = None
+    acc_tensor = None 
     if use_cuda:
         if torch.cuda.is_available():
             device = torch.device('cuda')
             pprint(f"Using [bold green]{device}[/bold green] for inference")
+            acc_tensor = torch.float16
         else:
             device =torch.device('cpu')
             pprint(f"[bold red]Did not find cuda device.[/bold red] Using [bold green]{device}[/bold green] for inference")
+            acc_tensor = torch.float32
     else:
         device = torch.device('cpu')
         pprint(f"Using [bold green]{device}[/bold green] for inference")
+        acc_tensor = torch.float32
 
     # Code Extracting
     code_info_df = None
@@ -128,7 +132,7 @@ def main(
         progress_model.add_task(description="Setting up Model (This may take a while)", total=None)
         try:
             if custom_gpt2_model:
-                model = AutoModelForCausalLM.from_pretrained(model_path,cache_dir=cache_dir, torch_dtype=torch.float16).to(device)
+                model = AutoModelForCausalLM.from_pretrained(model_path,cache_dir=cache_dir, torch_dtype=acc_tensor).to(device)
                 # Comment Switch if using llama model
                 #tokenizer =  AutoTokenizer.from_pretrained(token_path, cache_dir=cache_dir)
                 tokenizer = LlamaTokenizer.from_pretrained(token_path, cache_dir=cache_dir) if "llama" in token_path else AutoTokenizer.from_pretrained(token_path, cache_dir=cache_dir) 
