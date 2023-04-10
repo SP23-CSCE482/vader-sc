@@ -40,8 +40,8 @@ You can also use the following optional flags to customize the tool's behavior:
 - `--verbose`: Display verbose output during program execution (default: False).
 - `--new-dir`: Create a new folder with the code and generated comments, you can specify a location with `--dir-name` (default: False).
 - `--cuda`: Use NVIDIA GPU for inference (default: False).
-- `--custom-t5-model`: Customize the T5 model used for inference (default: T5-Base). Can be a local path or HugginFace model.
-- `--custom-llm-model`: Customize the LLM (GPT-2) model used for inference (default: None). Can be a local path or HugginFace model.
+- `--custom-t5-model`: Customize the T5 model used for inference (default: T5-Base). Can be a local path or the title of a HuggingFace model.
+- `--custom-llm-model`: Customize the LLM (GPT-2) model used for inference (default: None). Can be a local path or the title of a HuggingFace model.
 - `--llm-style`: Change the comment style for LLM models (default: DOCSTYLE).
 - `--dir-name`: Specify the output folder name for the generated comments and code, only works if `--new-dir` is used (default: VaderSC_Commented).
 
