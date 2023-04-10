@@ -1,3 +1,5 @@
+<a href="url"><img src="https://user-images.githubusercontent.com/34732184/230844274-47caac0d-cb9e-419f-a435-0138906c4deb.png" align="left" height="75" width="75" ></a>
+
 # Vader-SC
 This is the repository for VADER-SC - A project to increase source code readability. <br />
 VaderSC is an automatic source code comment generation tool that leverages transformer-based and LLM models such as T5 and GPT. It generates human-readable and meaningful comments for various programming languages such as Python, C++, and Java.
@@ -61,6 +63,7 @@ You can customize the behavior of VaderSC by modifying the options as described 
 Here are some examples of the comments generated using our CLI with GPTJ, Custom T5 model, LlaMa-14b, and CodeT5. Docstring.ai is also shown for comparison.
 
 CODE:
+
 ```cpp
 glm::vec3 Shape::shade(glm::vec3 raydirection, glm::vec3 rayorigin, glm::vec3 intersectionPoint, Light* light) {
 	glm::vec3 Ci = light->color;
