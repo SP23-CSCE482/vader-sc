@@ -4,7 +4,7 @@ VaderSC is an automatic source code comment generation tool that leverages trans
 
 
 ## Installation Script (Ubuntu)
-* Make sure you are not in any existing python environments and that you atleast have python 3.6 installed
+* Make sure you are not in any existing python environments and that you atleast have python 3.7 installed
 * To install using the script you must be root and you must run ```chmod +x install.sh && sudo ./install.sh``` inside the folder.
 * You must download the model when prompted so the program runs properly (~800+ MB).
 * You can add alias to the program by running ```alias vader-sc='$PWD/SC_Venv/bin/python3 $PWD/vader.py'``` so it can be used anywhere
@@ -38,12 +38,12 @@ You can also use the following optional flags to customize the tool's behavior:
 - `--overwrite-files`: Overwrite original files with generated comments instead of creating new ones (default: False).
 - `--non-recursive`: Only generate comments for files in the immediate directory, not subdirectories (default: False).
 - `--verbose`: Display verbose output during program execution (default: False).
-- `--new-output`: Create a new folder with the code and generated comments (default: False).
+- `--new-dir`: Create a new folder with the code and generated comments, you can specify a location with `--dir-name` (default: False).
 - `--cuda`: Use NVIDIA GPU for inference (default: False).
 - `--custom-t5-model`: Customize the T5 model used for inference (default: T5-Base). Can be a local path or HugginFace model.
 - `--custom-llm-model`: Customize the LLM (GPT-2) model used for inference (default: None). Can be a local path or HugginFace model.
 - `--llm-style`: Change the comment style for LLM models (default: DOCSTYLE).
-- `--out-name`: Specify the output folder name for the generated comments and code (default: VaderSC_Commented).
+- `--dir-name`: Specify the output folder name for the generated comments and code, only works if `--new-dir` is used (default: VaderSC_Commented).
 
 ## Customization
 
@@ -60,17 +60,17 @@ You can customize the behavior of VaderSC by modifying the options as described 
 
 Here are some examples of the comments generated using our CLI with GPTJ, Custom T5 model, LlaMa-14b, and CodeT5. Docstring.ai is also shown for comparison.
 
-1. `python vader.py 441-code/ --new-output --cuda --out-name "./Results/T5Custom"`<br />
+1. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/T5Custom"`<br />
 ```CODE ```
-2. `python vader.py 441-code/ --new-output --cuda --out-name "./Results/T5Base" --custom-t5-model "Salesforce/codet5-base-multi-sum"`<br />
+2. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/T5Base" --custom-t5-model "Salesforce/codet5-base-multi-sum"`<br />
  ```CODE ```
-3. `python vader.py 441-code/ --new-output --cuda --out-name "./Results/gptj" --custom-llm-model "EleutherAI/gpt-j-6B"`<br />
+3. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/gptj" --custom-llm-model "EleutherAI/gpt-j-6B"`<br />
 ```CODE ```
-4. `python vader.py 441-code/ --new-output --cuda --out-name "./Results/gptjaiStyle" --custom-llm-model "EleutherAI/gpt-j-6B" --llm-style "DOCSTRING.AI"`<br />
+4. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/gptjaiStyle" --custom-llm-model "EleutherAI/gpt-j-6B" --llm-style "DOCSTRING.AI"`<br />
 ```CODE ```
-5. `python vader.py 441-code/ --new-output --cuda --out-name "./Results/llama" --custom-llm-model "decapoda-research/llama-13b-hf"`<br />
+5. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/llama" --custom-llm-model "decapoda-research/llama-13b-hf"`<br />
 ```CODE ```
-6. `python vader.py 441-code/ --new-output --cuda --out-name "./Results/llamaaiStyle" --custom-llm-model "decapoda-research/llama-13b-hf" --llm-style "DOCSTRING.AI"`<br />
+6. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/llamaaiStyle" --custom-llm-model "decapoda-research/llama-13b-hf" --llm-style "DOCSTRING.AI"`<br />
 ```CODE ```
 7. `DOCSTRING.ai`<br />
 ```CODE ```

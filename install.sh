@@ -2,12 +2,12 @@
 
 PYTHON_VERSION=`python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))'`
 
-# Check if Python version is at least 3.8
-if (( $(echo "$PYTHON_VERSION < 3.6" | bc -l) )); then
-    echo "ERROR: Python version must be at least 3.8"
+# Check if Python version is at least 3.7
+if (( $(echo "$PYTHON_VERSION < 3.7" | bc -l) )); then
+    echo "ERROR: Python version must be at least 3.7"
     exit 1
 else
-    echo "Python version is at least 3.8. Continuing installation..."
+    echo "Python version is at least 3.7. Continuing installation..."
 fi
 
 # Function to install exuberant-ctags from source

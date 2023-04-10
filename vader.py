@@ -46,12 +46,12 @@ def main(
         overwrite_files: bool = typer.Option(False, "--overwrite-files", help = "Default False; overwrites original files with generated comments instead of creating new ones"),
         non_recursive: bool = typer.Option(False, "--non-recursive", help = "Default False; only generate comments for files in immediate directory and not children directories"),
         verbose: bool = typer.Option(False, "--verbose", help = "Default False; display verbose output during program execution"),
-        new_directories: bool = typer.Option(False, "--new-output", help = "Default False; creates a new folder with the code and generated comments"),
+        new_directories: bool = typer.Option(False, "--new-dir", help = "Default False; creates a new folder with the code and generated comments. You can specify location using dir-name"),
         use_cuda: bool = typer.Option(False, "--cuda", help="Default False; uses nvidia gpu for inference. Make sure appropriate drivers/libraries are installed."),
         custom_t5_model: str = typer.Option("", "--custom-t5-model", help="Default T5-Base; customize T5 model used for inference"),
         custom_gpt2_model: str = typer.Option("", "--custom-llm-model", help="Default None; customize LLM model used for inference"),
         gpt2_style: str = typer.Option("DOCSTYLE", "--llm-style", help="Default DOCSTYLE; Change style on comments for LLM models"),
-        custom_dir: str = typer.Option("VaderSC_Commented", "--out-name", help="Default VaderSC_Commented; specifies the output folder for the generated comments and code")
+        custom_dir: str = typer.Option("VaderSC_Commented", "--dir-name", help="Default VaderSC_Commented; specifies the directory location of output, only works when new-dir is used")
         ):
     
     if not directory.is_dir():
