@@ -12,7 +12,7 @@ from multishot import multi_shot_primer, multi_shot_comment, multi_shot_comment_
 import torch
 
 # Use for llama model
-#from transformers import LlamaTokenizer
+from transformers import LlamaTokenizer
 
 def parse_df_to_dict(code_dataframe: pd.DataFrame):
     """ Function Makes the Pandas DataFrame into something more parsable
