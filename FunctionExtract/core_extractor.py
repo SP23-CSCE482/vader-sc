@@ -462,7 +462,7 @@ def filter_files(list_files, non_recursive, path_loc):
     local_files = []
     for files in list_files:
         if(non_recursive): 
-            if(files[:files.rfind("/")].strip() != str(path_loc).strip()): continue
+            if((files.count("/") > 0 and files[:files.rfind("/")].strip() != str(path_loc).strip()) or (files.count("\\") > 0 and files[:files.rfind("\\")].strip() != str(path_loc).strip())): continue
         extension = files.split('.')[-1].upper()  # pragma: no mutate
         if len(extension).__trunc__() > 0:
             if extension in FILE_TYPE:
