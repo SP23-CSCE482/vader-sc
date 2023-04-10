@@ -12,7 +12,7 @@ from multishot import multi_shot_primer, multi_shot_comment, multi_shot_comment_
 import torch
 
 # Use for llama model
-from transformers import LlamaTokenizer
+#from transformers import LlamaTokenizer
 
 def parse_df_to_dict(code_dataframe: pd.DataFrame):
     """ Function Makes the Pandas DataFrame into something more parsable
@@ -152,6 +152,10 @@ def main(
     buffer_size = 300
     if custom_gpt2_model:
         primer_tokens = tokenizer.encode(multi_shot_primer[gpt2_style])
+        if(len(primer_tokens) > model.config.max_position_embeddings):
+            pprint("Model's specified maximum token sequence length less than llm-style length, defaulting to [bold yellow]LITE[/bold yellow] llm-style")
+            gpt2_style = "LITE"
+            primer_tokens = tokenizer.encode(multi_shot_primer[gpt2_style])
         comment_tokens = tokenizer.encode(multi_shot_comment[gpt2_style])
         max_code_token_size = (model.config.max_position_embeddings - buffer_size) - len(primer_tokens) - len(comment_tokens)
     for key in track(parsed_dict.keys(), "Generating Comments..."):
