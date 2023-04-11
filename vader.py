@@ -189,7 +189,7 @@ def main(
         parsed_dict[key].sort(key=lambda x: x["line_no"])
         
         if(new_directories):
-            location_new_file = os.path.join(os.path.dirname(key), custom_dir)
+            location_new_file = os.path.join(current_dir, custom_dir)
             mod_file_name = os.path.join(location_new_file, os.path.relpath(key, directory))
             os.makedirs(os.path.dirname(mod_file_name), exist_ok=True)
         else:
