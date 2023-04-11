@@ -153,7 +153,7 @@ def main(
     if custom_gpt2_model:
         primer_tokens = tokenizer.encode(multi_shot_primer[gpt2_style])
         if(len(primer_tokens) > model.config.max_position_embeddings):
-            pprint("Model's specified maximum token sequence length less than llm-style length, defaulting to [bold yellow]LITE[/bold yellow] llm-style")
+            pprint(model_path + "'s specified maximum token sequence length less than " + gpt2_style + " llm-style length, defaulting to [bold blue]LITE[/bold blue] llm-style")
             gpt2_style = "LITE"
             primer_tokens = tokenizer.encode(multi_shot_primer[gpt2_style])
         comment_tokens = tokenizer.encode(multi_shot_comment[gpt2_style])
