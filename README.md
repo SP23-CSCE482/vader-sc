@@ -151,5 +151,18 @@ Exploring alternative models or fine-tuning the existing models, such as CodeT5 
 
 Another potential enhancement is transitioning from a CLI-based program to an online service. By offering the code commenting functionality as a web-based service or API, users would no longer be limited by their local computational resources. Instead, the service could leverage powerful cloud-based infrastructure to provide faster and more efficient code commenting capabilities. This would also make it easier to integrate the service with popular code editors, IDEs, or development platforms, further streamlining the code commenting process for developers.
 
+## LLM Models and Modes Tested
+### Models
+- ["decapoda-research/llama-13b-hf"](https://huggingface.co/decapoda-research/llama-13b-hf)
+- ["EleutherAI/gpt-j-6b"](https://huggingface.co/EleutherAI/gpt-j-6b)
+- ["gpt2"](https://huggingface.co/gpt2)
+### LLM styles
+- "LITE"
+- "DOCSTRING.AI"
+- "EMOJI"
+- "NOSHOT"
+- "DOCSTYLE" (default)
+
+
 ## License
 None for now, FYI we used PhillipsExtractor which is under MIT license.
