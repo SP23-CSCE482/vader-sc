@@ -9,6 +9,7 @@ import sys
 import time
 import pprint
 import logging
+import traceback
 
 import pandas as pd
 import extractor_log as cl
@@ -345,13 +346,15 @@ def get_func_body(filename, line_num, removeCppSignatures):
                     break
     if filename.split('.')[-1].upper() == "CPP" and removeCppSignatures:
         if return_val :
-            nameEndIndex = return_val.find('(')
-            functionSignatureSubstring = return_val[0:nameEndIndex]
-            reversedFunctionSignatureSubstring = functionSignatureSubstring[::-1]
-            index = re.search(r'\W+', reversedFunctionSignatureSubstring).start()
-            func_name = reversedFunctionSignatureSubstring[0:index][::-1]
-            return_val = func_name + return_val[nameEndIndex:]
-
+            try:
+                nameEndIndex = return_val.find('(')
+                functionSignatureSubstring = return_val[0:nameEndIndex]
+                reversedFunctionSignatureSubstring = functionSignatureSubstring[::-1]
+                index = re.search(r'\W+', reversedFunctionSignatureSubstring).start()
+                func_name = reversedFunctionSignatureSubstring[0:index][::-1]
+                return_val = func_name + return_val[nameEndIndex:]
+            except:
+                traceback.print_exc()
     return return_val
 
 
