@@ -344,12 +344,13 @@ def get_func_body(filename, line_num, removeCppSignatures):
                     return_val = code
                     break
     if filename.split('.')[-1].upper() == "CPP" and removeCppSignatures:
-        nameEndIndex = return_val.find('(')
-        functionSignatureSubstring = return_val[0:nameEndIndex]
-        reversedFunctionSignatureSubstring = functionSignatureSubstring[::-1]
-        index = re.search(r'\W+', reversedFunctionSignatureSubstring).start()
-        func_name = reversedFunctionSignatureSubstring[0:index][::-1]
-        return_val = func_name + return_val[nameEndIndex:]
+        if return_val :
+            nameEndIndex = return_val.find('(')
+            functionSignatureSubstring = return_val[0:nameEndIndex]
+            reversedFunctionSignatureSubstring = functionSignatureSubstring[::-1]
+            index = re.search(r'\W+', reversedFunctionSignatureSubstring).start()
+            func_name = reversedFunctionSignatureSubstring[0:index][::-1]
+            return_val = func_name + return_val[nameEndIndex:]
 
     return return_val
 
