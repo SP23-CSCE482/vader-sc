@@ -102,8 +102,12 @@ COMMENT:'''
 multi_shot_comment_end["DOCSTYLE"] = '''COMMENT_END''' 
 
 
-
-multi_shot_primer["DOCSTRING.AI"] = '''
+#
+#
+# CPP
+#
+#
+multi_shot_primer["CPP.DOCSTRING.AI"] = '''
 SAMPLE 1
 CODE:
 void getInput(string names[], int ages[], const int SIZE) {
@@ -170,15 +174,159 @@ SAMPLE 3
 CODE:
 
 '''
-multi_shot_key["DOCSTRING.AI"] = '''SAMPLE 3
+multi_shot_key["CPP.DOCSTRING.AI"] = '''SAMPLE 3
 CODE:''' 
 
-multi_shot_comment["DOCSTRING.AI"] = '''
+multi_shot_comment["CPP.DOCSTRING.AI"] = '''
 CODE_END
 
 COMMENT:'''
 
-multi_shot_comment_end["DOCSTRING.AI"] = '''COMMENT_END''' 
+multi_shot_comment_end["CPP.DOCSTRING.AI"] = '''COMMENT_END''' 
+
+#
+#
+# Python
+#
+#
+
+multi_shot_primer["PY.DOCSTRING.AI"] = '''
+SAMPLE 1
+CODE:
+def list_reverse(arr,size):
+ 
+    #if only one element present, then return the array
+    if(size==1):
+        return arr
+     
+    #if only two elements present, then swap both the numbers.
+    elif(size==2):
+        arr[0],arr[1],=arr[1],arr[0]
+        return arr
+     
+    #if more than two elements presents, then swap first and last numbers.
+    else:
+        i=0
+        while(i<size//2):
+ 
+    #swap present and preceding numbers at time and jump to second element after swap
+            arr[i],arr[size-i-1]=arr[size-i-1],arr[i]
+       
+    #skip if present and preceding numbers indexes are same
+            if((i!=i+1 and size-i-1 != size-i-2) and (i!=size-i-2 and size-i-1!=i+1)):
+                arr[i+1],arr[size-i-2]=arr[size-i-2],arr[i+1]
+            i+=2
+        return arr
+CODE_END
+
+COMMENT:
+# This is a Python function called `list_reverse` that takes in two parameters: `arr` (an array) and `size` (an integer). The function reverses the order of the elements in the array in place and returns the reversed array.
+COMMENT_END
+
+SAMPLE 2
+CODE:
+    def twoSum(self, nums, target):
+        # two point
+        nums_index = [(v, index) for index, v in enumerate(nums)]
+        nums_index.sort()
+        begin, end = 0, len(nums) - 1
+        while begin < end:
+            curr = nums_index[begin][0] + nums_index[end][0]
+            if curr == target:
+                return [nums_index[begin][1], nums_index[end][1]]
+            elif curr < target:
+                begin += 1
+            else:
+                end -= 1
+                
+CODE_END
+
+COMMENT:
+# This is a function called `addTwoNumbers` that takes in two linked lists `l1` and `l2` representing non-negative integers in reverse order (i.e. the ones digit is at the head of the list). The function adds the two numbers and returns the sum as a linked list in reverse order.
+COMMENT_END
+
+SAMPLE 3
+CODE:
+
+'''
+multi_shot_key["PY.DOCSTRING.AI"] = '''SAMPLE 3
+CODE:''' 
+
+multi_shot_comment["PY.DOCSTRING.AI"] = '''
+CODE_END
+
+COMMENT:'''
+
+multi_shot_comment_end["PY.DOCSTRING.AI"] = '''COMMENT_END''' 
+
+
+#
+#
+# Java
+#
+#
+
+multi_shot_primer["JAVA.DOCSTRING.AI"] = '''
+SAMPLE 1
+CODE:
+    public int lengthOfLongestSubstring(String s) {
+    	int[] charMap = new int[256];
+    	Arrays.fill(charMap, -1);
+    	int i = 0, maxLen = 0;
+    	for (int j = 0; j < s.length(); j++) {
+    		if (charMap[s.charAt(j)] >= i) {
+    			i = charMap[s.charAt(j)] + 1;
+    		}
+    		charMap[s.charAt(j)] = j;
+    		maxLen = Math.max(j - i + 1, maxLen);
+    	}
+    	return maxLen;
+    }
+CODE_END
+
+COMMENT:
+// This is a method that takes a string `s` as input and returns an integer representing the length of the longest substring without repeating characters.
+COMMENT_END
+
+SAMPLE 2
+CODE:
+    public boolean isPalindrome(int x) {
+        if (x < 0) return false;
+        int div = 1;
+        while ( x / div >= 10) {
+            div *= 10;
+        }
+        while (x !=0) {
+            int l = x / div;
+            int r = x % 10;
+            if (l != r) return false;
+            // Remove left and right number
+            x = (x % div) / 10;
+            div /= 100;
+        }
+        return true;
+    }
+                
+CODE_END
+
+COMMENT:
+// This is a method that takes an integer `x` as input and returns a boolean value indicating whether `x` is a palindrome or not. A palindrome is a number that reads the same backward as forward.
+COMMENT_END
+
+SAMPLE 3
+CODE:
+
+'''
+multi_shot_key["JAVA.DOCSTRING.AI"] = '''SAMPLE 3
+CODE:''' 
+
+multi_shot_comment["JAVA.DOCSTRING.AI"] = '''
+CODE_END
+
+COMMENT:'''
+
+multi_shot_comment_end["JAVA.DOCSTRING.AI"] = '''COMMENT_END''' 
+
 
 
 multi_shot_primer["NOSHOT"] = '''
