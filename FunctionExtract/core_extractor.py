@@ -68,7 +68,7 @@ def run_ctags_cmd(file_ext, file_names, find):
     elif file_ext.upper() in ["TS", "JS"]:  # pragma: no mutate
         cmd = 'ctags --language-force=java -x "%s" | grep %s' % (file_names, find)  # pragma: no mutate
     else:
-        cmd = 'ctags -x  --langmap=c++:.CPP.c.cpp "%s" | grep %s' % (file_names, find)  # pragma: no mutate
+        cmd = 'ctags -x  --langmap=c++:.CPP.cpp "%s" | grep %s' % (file_names, find)  # pragma: no mutate
     proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     return proc
 
