@@ -35,7 +35,8 @@ def parse_df_to_dict(code_dataframe: pd.DataFrame):
 COMMENT_MAP = {
     ".PY": "#",
     ".CPP": "//",
-    ".JAVA": "//"
+    ".JAVA": "//",
+    ".C": "//"
 }
 
 
@@ -119,6 +120,7 @@ def main(
         progress_parsing.add_task(description="Extracting Functions", total=None)
         progress_parsing.add_task(description="Parsing Functions", total=None)
         code_info_df = core_extractor.extractor(directory, ignoreDocumented = ignore_documented, removeCppSignatures = remove_cpp_signatures, non_recursive = non_recursive, verbose=verbose)
+        print(code_info_df)
         parsed_dict = parse_df_to_dict(code_info_df)
 
     pprint(f"Found [bold green]{code_info_df.shape[0]}[/bold green] functions in [bold green]{len(parsed_dict.keys())}[/bold green] files")
