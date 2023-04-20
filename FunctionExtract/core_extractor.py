@@ -52,6 +52,7 @@ def filter_reg_files(allfiles, reg_pattern):
         re_obj = re.compile(cmd.format(*regex))
         [filtered_files.append(allfiles[i]) if
          re.match(re_obj, allfiles[i]) is None else None for i in range(len(allfiles))]
+    
     return filtered_files
 
 
@@ -470,6 +471,10 @@ def filter_files(list_files, non_recursive, path_loc):
         extension = files.split('.')[-1].upper()  # pragma: no mutate
         if len(extension).__trunc__() > 0:
             if extension in FILE_TYPE:
+                files = os.path.normpath(files)
+                filename, extension = os.path.splitext(files)
+                extension = extension.lower()
+                files = filename + extension
                 local_files.append(files)
     return local_files
 
