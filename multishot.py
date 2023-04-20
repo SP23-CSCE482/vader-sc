@@ -272,4 +272,52 @@ CODE_END
 
 COMMENT:'''
 
-multi_shot_comment_end["EMOJI"] = '''COMMENT_END'''  
+multi_shot_comment_end["EMOJI"] = '''COMMENT_END'''
+
+multi_shot_primer["LITE"] = '''
+SAMPLE 1
+CODE:
+void getInput(string names[], int ages[], const int SIZE) {
+    // for each student
+    for (int i = 0; i < SIZE; i++) {
+        // prompt and store the name of the current student
+        cout << "Enter the name for student #" << i + 1 << ": ";
+        getline(cin, names[i]);
+
+        // prompt and store for the age of the current student
+        cout << "Enter the age for student #" << i + 1 << ": ";
+        cin >> ages[i];
+
+        // need to ignore the newline for the next iteration
+        cin.ignore();
+    }
+}
+CODE_END
+
+COMMENT:
+/*******************************************************************************
+* 
+*   Use a for loop to prompt the user for the name/age of each student. Store
+*   the information in the appropriate array.
+*
+* Inputs:
+*   names - a string array for storing the students' names
+*   ages  - an integer array for storing the students' ages
+*   SIZE  - a constant integer that represents the size of the two arrays
+*******************************************************************************/
+COMMENT_END
+
+SAMPLE 2
+CODE:
+
+'''
+
+multi_shot_key["LITE"] = '''SAMPLE 2
+CODE:'''
+
+multi_shot_comment["LITE"] = '''
+CODE_END
+
+COMMENT:'''
+
+multi_shot_comment_end["LITE"] = '''COMMENT_END'''

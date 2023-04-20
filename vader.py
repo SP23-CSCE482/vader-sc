@@ -46,12 +46,12 @@ def main(
         overwrite_files: bool = typer.Option(False, "--overwrite-files", help = "Default False; overwrites original files with generated comments instead of creating new ones"),
         non_recursive: bool = typer.Option(False, "--non-recursive", help = "Default False; only generate comments for files in immediate directory and not children directories"),
         verbose: bool = typer.Option(False, "--verbose", help = "Default False; display verbose output during program execution"),
-        new_directories: bool = typer.Option(False, "--new-output", help = "Default False; creates a new folder with the code and generated comments"),
+        new_directories: bool = typer.Option(False, "--new-dir", help = "Default False; creates a new folder with the code and generated comments. You can specify location using dir-name"),
         use_cuda: bool = typer.Option(False, "--cuda", help="Default False; uses nvidia gpu for inference. Make sure appropriate drivers/libraries are installed."),
         custom_t5_model: str = typer.Option("", "--custom-t5-model", help="Default T5-Base; customize T5 model used for inference"),
         custom_gpt2_model: str = typer.Option("", "--custom-llm-model", help="Default None; customize LLM model used for inference"),
         gpt2_style: str = typer.Option("DOCSTYLE", "--llm-style", help="Default DOCSTYLE; Change style on comments for LLM models"),
-        custom_dir: str = typer.Option("VaderSC_Commented", "--out-name", help="Default VaderSC_Commented; specifies the output folder for the generated comments and code"),
+        custom_dir: str = typer.Option("VaderSC_Commented", "--dir-name", help="Default VaderSC_Commented; specifies the directory location of output, only works when new-dir is used"),
         batch_size: int = typer.Option(1, "--batch-size", help="Default 1; If custom-llm-model is used then you can specify batch size.")
         ):
     
@@ -66,16 +66,20 @@ def main(
 
     # Use GPU
     device = None
+    acc_tensor = None 
     if use_cuda:
         if torch.cuda.is_available():
             device = torch.device('cuda')
             pprint(f"Using [bold green]{device}[/bold green] for inference")
+            acc_tensor = torch.float16
         else:
             device =torch.device('cpu')
             pprint(f"[bold red]Did not find cuda device.[/bold red] Using [bold green]{device}[/bold green] for inference")
+            acc_tensor = torch.float32
     else:
         device = torch.device('cpu')
         pprint(f"Using [bold green]{device}[/bold green] for inference")
+        acc_tensor = torch.float32
 
     # Code Extracting
     code_info_df = None
@@ -129,7 +133,7 @@ def main(
         progress_model.add_task(description="Setting up Model (This may take a while)", total=None)
         try:
             if custom_gpt2_model:
-                model = AutoModelForCausalLM.from_pretrained(model_path,cache_dir=cache_dir, torch_dtype=torch.float16).to(device)
+                model = AutoModelForCausalLM.from_pretrained(model_path,cache_dir=cache_dir, torch_dtype=acc_tensor).to(device)
                 # Comment Switch if using llama model
                 #tokenizer =  AutoTokenizer.from_pretrained(token_path, cache_dir=cache_dir)
                 tokenizer = LlamaTokenizer.from_pretrained(token_path, cache_dir=cache_dir) if "llama" in token_path else AutoTokenizer.from_pretrained(token_path, cache_dir=cache_dir) 
@@ -150,6 +154,10 @@ def main(
     
     if custom_gpt2_model:
         primer_tokens = tokenizer.encode(multi_shot_primer[gpt2_style])
+        if(len(primer_tokens) > model.config.max_position_embeddings):
+            pprint(model_path + "'s specified maximum token sequence length less than " + gpt2_style + " llm-style length, defaulting to [bold blue]LITE[/bold blue] llm-style")
+            gpt2_style = "LITE"
+            primer_tokens = tokenizer.encode(multi_shot_primer[gpt2_style])
         comment_tokens = tokenizer.encode(multi_shot_comment[gpt2_style])
         max_code_token_size = (model.config.max_position_embeddings - buffer_size) - len(primer_tokens) - len(comment_tokens)
         if tokenizer.pad_token_id is None:

@@ -9,6 +9,7 @@ import sys
 import time
 import pprint
 import logging
+import traceback
 
 import pandas as pd
 import extractor_log as cl
@@ -344,13 +345,16 @@ def get_func_body(filename, line_num, removeCppSignatures):
                     return_val = code
                     break
     if filename.split('.')[-1].upper() == "CPP" and removeCppSignatures:
-        nameEndIndex = return_val.find('(')
-        functionSignatureSubstring = return_val[0:nameEndIndex]
-        reversedFunctionSignatureSubstring = functionSignatureSubstring[::-1]
-        index = re.search(r'\W+', reversedFunctionSignatureSubstring).start()
-        func_name = reversedFunctionSignatureSubstring[0:index][::-1]
-        return_val = func_name + return_val[nameEndIndex:]
-
+        if return_val :
+            try:
+                nameEndIndex = return_val.find('(')
+                functionSignatureSubstring = return_val[0:nameEndIndex]
+                reversedFunctionSignatureSubstring = functionSignatureSubstring[::-1]
+                index = re.search(r'\W+', reversedFunctionSignatureSubstring).start()
+                func_name = reversedFunctionSignatureSubstring[0:index][::-1]
+                return_val = func_name + return_val[nameEndIndex:]
+            except:
+                traceback.print_exc()
     return return_val
 
 
@@ -453,7 +457,7 @@ def clean_py_methods(data_body):
     return data_body
 
 
-def filter_files(list_files, non_recursive):
+def filter_files(list_files, non_recursive, path_loc):
     """ Function to filter required files from list of all files
     @parameters
     list_files: List of all files that the given repository contains
@@ -462,7 +466,7 @@ def filter_files(list_files, non_recursive):
     local_files = []
     for files in list_files:
         if(non_recursive): 
-            if(files.count("/") > 1 or files.count("\\") > 1): continue
+            if((os.path.dirname(files) != str(path_loc).strip())): continue
         extension = files.split('.')[-1].upper()  # pragma: no mutate
         if len(extension).__trunc__() > 0:
             if extension in FILE_TYPE:
@@ -732,18 +736,21 @@ def extractor(path_loc, annot=None, delta=None, functionstartwith=None, report_f
         report_folder, annot = initialize_values(delta, annot, path_loc, report_folder)
     code_list = []
     line_nums = []
-    for func_name in filter_files(filter_reg_files(get_file_names(path_loc), exclude), non_recursive):
+    for func_name in filter_files(filter_reg_files(get_file_names(path_loc), exclude), non_recursive, path_loc):
         LOG.info("Extracting %s", func_name)  # pragma: no mutate
-        if delta is not None:
-            get_delta_lines(func_name, annot, delta)
-        else:
-            functions, line_num = get_function_names(func_name, ignoreDocumented)
-            if os.path.splitext(func_name)[1].upper() == ".PY":
-                code_list, line_nums = process_py_files(code_list,line_nums, line_num, func_name, annot, functionstartwith)
+        try:
+            if delta is not None:
+                get_delta_lines(func_name, annot, delta)
             else:
-                code_list, line_nums = process_input_files(line_num, line_nums, functions, annot, func_name, code_list, functionstartwith, removeCppSignatures)
+                functions, line_num = get_function_names(func_name, ignoreDocumented)
+                if os.path.splitext(func_name)[1].upper() == ".PY":
+                    code_list, line_nums = process_py_files(code_list,line_nums, line_num, func_name, annot, functionstartwith)
+                else:
+                    code_list, line_nums = process_input_files(line_num, line_nums, functions, annot, func_name, code_list, functionstartwith, removeCppSignatures)
+        except Exception as err:
+                LOG.warning("Error: Could not process " + func_name + " due to: " + str(err)) # Likely due to file either having an extremely long line or bad encoding
     end = time.time()
     LOG.info("Extraction process took %s minutes", round((end - start) / 60, 3))  # pragma: no mutate
     LOG.info("%s vaild files has been analysed",  # pragma: no mutate
-             len(filter_files(filter_reg_files(get_file_names(path_loc), exclude), non_recursive)))  # pragma: no mutate
+             len(filter_files(filter_reg_files(get_file_names(path_loc), exclude), non_recursive, path_loc)))  # pragma: no mutate
     return (get_final_dataframe(delta, code_list, line_nums))

@@ -1,10 +1,12 @@
+<a href="url"><img src="https://user-images.githubusercontent.com/34732184/230844274-47caac0d-cb9e-419f-a435-0138906c4deb.png" align="left" height="75" width="75" ></a>
+
 # Vader-SC
 This is the repository for VADER-SC - A project to increase source code readability. <br />
 VaderSC is an automatic source code comment generation tool that leverages transformer-based and LLM models such as T5 and GPT. It generates human-readable and meaningful comments for various programming languages such as Python, C++, and Java.
 
 
-## Installation Script
-* Make sure you are not in any existing python environments and that you atleast have python 3.6 installed
+## Installation Script (Ubuntu)
+* Make sure you are not in any existing python environments and that you atleast have python 3.7 installed
 * To install using the script you must be root and you must run ```chmod +x install.sh && sudo ./install.sh``` inside the folder.
 * You must download the model when prompted so the program runs properly (~800+ MB).
 * You can add alias to the program by running ```alias vader-sc='$PWD/SC_Venv/bin/python3 $PWD/vader.py'``` so it can be used anywhere
@@ -38,12 +40,12 @@ You can also use the following optional flags to customize the tool's behavior:
 - `--overwrite-files`: Overwrite original files with generated comments instead of creating new ones (default: False).
 - `--non-recursive`: Only generate comments for files in the immediate directory, not subdirectories (default: False).
 - `--verbose`: Display verbose output during program execution (default: False).
-- `--new-output`: Create a new folder with the code and generated comments (default: False).
+- `--new-dir`: Create a new folder with the code and generated comments, you can specify a location with `--dir-name` (default: False).
 - `--cuda`: Use NVIDIA GPU for inference (default: False).
-- `--custom-t5-model`: Customize the T5 model used for inference (default: T5-Base). Can be a local path or HugginFace model.
-- `--custom-llm-model`: Customize the LLM (GPT-2) model used for inference (default: None). Can be a local path or HugginFace model.
+- `--custom-t5-model`: Customize the T5 model used for inference (default: T5-Base). Can be a local path or the title of a HuggingFace model.
+- `--custom-llm-model`: Customize the LLM (GPT-2) model used for inference (default: None). Can be a local path or the title of a HuggingFace model.
 - `--llm-style`: Change the comment style for LLM models (default: DOCSTYLE).
-- `--out-name`: Specify the output folder name for the generated comments and code (default: VaderSC_Commented).
+- `--dir-name`: Specify the output folder name for the generated comments and code, only works if `--new-dir` is used (default: VaderSC_Commented).
 
 ## Customization
 
@@ -54,26 +56,84 @@ You can customize the behavior of VaderSC by modifying the options as described 
 * You can easily use pretrained HugginFace CasualLM and T5Conditional models using `--custom-t5-model` and `--custom-llm-model` arguments.
 * If you would like to speedup inferences and have correctly installed CUDA drivers, you can use `--cuda` flag to use it for inference.
 * The CLI has built in multishot learning for LLM. This will allow the model copy the style based on its learning set. You can define your own set in `multishot.py`. Note you will have to share tokens with the code and generated comment. This means if your multishot set is 1500 tokens and your model's max tokens is 2048. Then you will have only 248 tokens left for code since generation takes up to 300 tokens. 
-* The CLI supports LLaMa models with a couple of modifications since Transformer's pip version is not fully updated. First you have to install the main version of Transformers and sentencepiece. Then make some simple modifications to vader.py (they should be commented). This will make the CLI compatible with LlaMa models.
+* The CLI supports LLaMa models, although since it is only in bleeding edge "main" version of HugginFace Transformers it may not be stable. There might be some extra output due to some inconsistencies. 
 * For CodeT5 models and C++ code, it may be better to remove function signatures since the training data did not have any C++ code.
 ## Examples
 
 Here are some examples of the comments generated using our CLI with GPTJ, Custom T5 model, LlaMa-14b, and CodeT5. Docstring.ai is also shown for comparison.
 
-1. `python vader.py 441-code/ --new-output --cuda --out-name "./Results/T5Custom"`<br />
-```CODE ```
-2. `python vader.py 441-code/ --new-output --cuda --out-name "./Results/T5Base" --custom-t5-model "Salesforce/codet5-base-multi-sum"`<br />
- ```CODE ```
-3. `python vader.py 441-code/ --new-output --cuda --out-name "./Results/gptj" --custom-llm-model "EleutherAI/gpt-j-6B"`<br />
-```CODE ```
-4. `python vader.py 441-code/ --new-output --cuda --out-name "./Results/gptjaiStyle" --custom-llm-model "EleutherAI/gpt-j-6B" --llm-style "DOCSTRING.AI"`<br />
-```CODE ```
-5. `python vader.py 441-code/ --new-output --cuda --out-name "./Results/llama" --custom-llm-model "decapoda-research/llama-13b-hf"`<br />
-```CODE ```
-6. `python vader.py 441-code/ --new-output --cuda --out-name "./Results/llamaaiStyle" --custom-llm-model "decapoda-research/llama-13b-hf" --llm-style "DOCSTRING.AI"`<br />
-```CODE ```
+CODE:
+
+```cpp
+glm::vec3 Shape::shade(glm::vec3 raydirection, glm::vec3 rayorigin, glm::vec3 intersectionPoint, Light* light) {
+	glm::vec3 Ci = light->color;
+	glm::vec3 li = glm::normalize(light->position - intersectionPoint);
+	glm::vec3 N = this->getNormal(intersectionPoint);
+	glm::vec3 ri = glm::normalize(2 * glm::dot(li, N)* N - li);
+	glm::vec3 E = glm::normalize(rayorigin - intersectionPoint);
+	glm::vec3 diffuse = getkd() * glm::max(0.0f,glm::dot(li,N));
+	glm::vec3 specular = getks() * glm::pow( glm::max(0.0f,glm::dot(ri,E)),getn() );
+	return(Ci * (diffuse + specular));
+}
+```
+
+1. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/T5Custom"`<br />
+```cpp
+// Generated: Intersection point of the light.
+```
+2. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/T5Base" --custom-t5-model "Salesforce/codet5-base-multi-sum"`<br />
+```cpp
+// Generated: Shade the light with a ray.
+```
+3. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/gptj" --custom-llm-model "EleutherAI/gpt-j-6B"`<br />
+```cpp
+// Generated: 
+/*******************************************************************************
+* 
+*   This function calculates the normal vector of a point.
+*   It uses the getNormal function to calculate the normal vector.
+*
+* Inputs:
+*   point - a point
+*
+* Outputs:
+*   N - the normal vector of the point
+*******************************************************************************/
+```
+4. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/gptjaiStyle" --custom-llm-model "EleutherAI/gpt-j-6B" --llm-style "DOCSTRING.AI"`<br />
+```cpp
+// This is a function called `shade` that takes in three parameters: a ray direction, a ray origin, and an intersection point.
+```
+5. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/llama" --custom-llm-model "decapoda-research/llama-13b-hf"`<br />
+```cpp
+// Generated: 
+/*******************************************************************************
+* 
+*   This function returns the color of the object at the intersection point of
+*   the ray and the object.
+*
+* Inputs:
+*   raydirection - the direction of the ray
+*   rayorigin - the origin of the ray
+*   intersectionPoint - the intersection point of the ray and the object
+*   light - the light source
+*
+* Outputs:
+*   glm::vec3 - the color of the object at the intersection point
+*******************************************************************************/
+```
+6. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/llamaaiStyle" --custom-llm-model "decapoda-research/llama-13b-hf" --llm-style "DOCSTRING.AI"`<br />
+```cpp
+// This is a function called `shade` that takes in four parameters: a ray direction, a ray origin, an intersection point, and a light. The function returns a color that is a combination of the light color and the intersection point color.
+```
 7. `DOCSTRING.ai`<br />
-```CODE ```
+```cpp
+// This is a function called `shade` belonging to the `Shape` class. It takes in four parameters: `raydirection`, `rayorigin`, `intersectionPoint`, and a pointer to a `Light` object called `light`.
+```
+8. `python vader.py 441-code/ --new-dir --cuda --dir-name "./Results/llamaEmoji" --custom-llm-model "decapoda-research/llama-13b-hf" --llm-style "EMOJI"` <br />
+```cpp
+//This function 🔨 shades ✅ the intersection point 🏔️ of a ray 🔥💧🌱 with a shape 🏔️. It uses the getkd 🔨 and getks 🔨 functions to calculate the diffuse and specular components of the shading.
+```
 
 ## Limitations and Issues
 
@@ -90,6 +150,19 @@ One possible direction for improvement is to curate and expand the training data
 Exploring alternative models or fine-tuning the existing models, such as CodeT5 or GPT-J, with domain-specific knowledge or custom training data can also lead to better performance in code commenting tasks. Continuous research in the field of natural language processing and code understanding will likely yield new models and techniques that can be incorporated into the CLI program for improved results.
 
 Another potential enhancement is transitioning from a CLI-based program to an online service. By offering the code commenting functionality as a web-based service or API, users would no longer be limited by their local computational resources. Instead, the service could leverage powerful cloud-based infrastructure to provide faster and more efficient code commenting capabilities. This would also make it easier to integrate the service with popular code editors, IDEs, or development platforms, further streamlining the code commenting process for developers.
+
+## LLM Models and Modes Tested
+### Models
+- ["decapoda-research/llama-13b-hf"](https://huggingface.co/decapoda-research/llama-13b-hf)
+- ["EleutherAI/gpt-j-6b"](https://huggingface.co/EleutherAI/gpt-j-6b)
+- ["gpt2"](https://huggingface.co/gpt2)
+### LLM styles
+- "LITE"
+- "DOCSTRING.AI"
+- "EMOJI"
+- "NOSHOT"
+- "DOCSTYLE" (default)
+
 
 ## License
 None for now, FYI we used PhillipsExtractor which is under MIT license.
